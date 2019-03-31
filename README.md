@@ -21,6 +21,31 @@ The y-axis indicates the maximum reward seen so far, as is done in the paper.
 
 For specific requirements, please take a look at the pip dependency file `requirements.txt` and conda dependency file `environments.yml`.
 
+## Install
+
+1. install mujoco 2.0
+
+```
+wget https://www.roboti.us/download/mujoco200_linux.zip
+unzip mujoco200_linux.zip
+mv mujoco200_linux.zip ~/.mujoco
+```
+
+2. install dm_control
+
+3. install dm_control2gym
+
+```
+git clone https://github.com/martinseilair/dm_control2gym
+pip install .
+```
+
+4. install dependencies
+
+```
+pip install -r requirement.txt
+```
+
 ## Running Experiments
 
 Experiments for a particular environment can be run using:
