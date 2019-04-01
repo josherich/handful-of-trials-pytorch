@@ -54,7 +54,7 @@ class MBExperiment:
             params.exp_cfg, "ntrain_iters", "Must provide number of training iterations."
         )
         self.nrollouts_per_iter = params.exp_cfg.get("nrollouts_per_iter", 1)
-        self.ninit_rollouts = params.exp_cfg.get("ninit_rollouts", 1)
+        self.ninit_rollouts = params.exp_cfg.get("ninit_rollouts", 5)
         self.policy = get_required_argument(params.exp_cfg, "policy", "Must provide a policy.")
 
         self.logdir = os.path.join(
