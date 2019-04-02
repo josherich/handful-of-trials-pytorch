@@ -31,6 +31,7 @@ from dm_control.suite import base
 from dm_control.suite import common
 from dm_control.utils import containers
 from dm_control.utils import rewards
+from dm_control.suite.utils import randomizers
 
 from lxml import etree
 import numpy as np
@@ -163,6 +164,23 @@ class JacoReacher(base.Task):
     #   physics.named.data.qpos['slider'] = self.random.uniform(-.1, .1)
     #   physics.named.data.qpos[1:] = self.random.uniform(-.034, .034, nv - 1)
     # physics.named.data.qvel[:] = 0.01 * self.random.randn(physics.model.nv)
+    
+    # physics.named.model.geom_size['target', 0] = self._target_size
+    # randomizers.randomize_limited_and_rotational_joints(physics, self.random)
+
+    """Sets the state of the environment at the start of each episode."""
+    # physics.named.model.geom_size['target', 0] = self._target_size
+    randomizers.randomize_limited_and_rotational_joints(physics, self.random)
+
+    # randomize target position
+    angle = self.random.uniform(0, 2 * np.pi)
+    anglez = self.random.uniform(0, 2 * np.pi)
+    radius = self.random.uniform(.05, .30)
+
+    physics.named.model.geom_pos['target', 'x'] = radius * np.sin(angle)
+    physics.named.model.geom_pos['target', 'y'] = radius * np.cos(angle)
+    physics.named.model.geom_pos['target', 'z'] = radius * np.sin(anglez)
+
 
   def get_observation(self, physics):
     """Returns an observation of the (bounded) physics state."""
