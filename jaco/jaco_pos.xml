@@ -16,7 +16,7 @@
 ====================================================== -->
 
 <mujoco model="jaco(v1.31)">
-    <compiler angle="radian" meshdir="jaco/meshes_other/" />
+    <compiler angle="radian" meshdir="jaco/meshes_pos/" />
 
 	<!-- <option integrator="RK4" solver="PGS" timestep="0.001" gravity="0 0 0" iterations="50"/> -->
 
@@ -99,13 +99,13 @@
 
 				<body name="jaco_link_2" pos="0 0 -0.1185" quat="0 0 0.707107 0.707107">
                     <inertial pos="0.206657 -1.55187e-007 -0.030675" quat="8.97411e-006 0.707331 5.06696e-006 0.706883" mass="1.85031" diaginertia="0.0402753 0.0398125 0.00121953" />
-                    <joint name="jaco_joint_2" axis="0 0 1" damping="30" limited="false" range="0.82 5.46"/>
+                    <joint name="jaco_joint_2" axis="0 0 1" damping="30" limited="true" range="0.82 5.46"/>
                     <geom contype="1" conaffinity="1" mesh="jaco_link_2"/>
 
 
 					<body name="jaco_link_3" pos="0.41 0 0" quat="0 0.707107 0.707107 0">
                         <inertial pos="0.0847979 -1.18469e-007 -0.020283" quat="2.33799e-005 0.694869 1.96996e-005 0.719136" mass="0.70372" diaginertia="0.00386732 0.00373181 0.000358773" />
-                        <joint name="jaco_joint_3" axis="0 0 -1" damping="30" limited="false" range="0.332 5.951"/>
+                        <joint name="jaco_joint_3" axis="0 0 -1" damping="30" limited="true" range="0.332 5.951"/>
                         <geom contype="1" conaffinity="1" mesh="jaco_link_3"/>
 
 
@@ -121,10 +121,10 @@
                                 <geom contype="1" conaffinity="1" mesh="jaco_link_5"/>
 
 
-								<body name="jaco_link_hand" pos="0.0343 0 -0.06588" quat="0.627211 -0.326506 -0.326506 0.627211">
+								<body name="jaco_link_6" pos="0.0343 0 -0.06588" quat="0.627211 -0.326506 -0.326506 0.627211">
                                     <inertial pos="0.0036132 -6.2241e-005 -0.0583749" quat="0.669114 -0.237618 -0.23799 0.66271" mass="0.58074" diaginertia="0.000817146 0.000671192 0.000606807" />
                                     <joint name="jaco_joint_6" axis="0 0 -1" damping="30" />
-                                    <geom name="jaco_hand" contype="1" conaffinity="1" mesh="jaco_link_hand" rgba=".13 .13 .13 1"/>
+                                    <geom name="jaco_joint_6" contype="1" conaffinity="1" mesh="jaco_link_hand" rgba=".13 .13 .13 1"/>
 
 
                                     <body name="jaco_link_finger_1" pos="-0.03978 0 -0.10071" quat="-0.414818 -0.329751 -0.663854 0.52772">
@@ -168,18 +168,39 @@
 		<!--<motor joint='jaco_joint_finger_1' 	name='Ajaco_joint_finger_1' gear='10'/>
 		<motor joint='jaco_joint_finger_2' 	name='Ajaco_joint_finger_2' gear='10'/>
 		<motor joint='jaco_joint_finger_3' 	name='Ajaco_joint_finger_3' gear='10'/>-->
-    <position joint='jaco_joint_1' name='Ajaco_joint_1' gear="50" ctrllimited="true" kp="5" forcelimited="true" forcerange="-1.0 1.0" ctrlrange="-7.0 7.0"/>
-    <position joint='jaco_joint_2' name='Ajaco_joint_2' gear="100" ctrllimited="true" kp="5" forcelimited="true" forcerange="-3.0 3.0" ctrlrange="-7.0 7.0"/>
-    <position joint='jaco_joint_3' name='Ajaco_joint_3' gear="100" ctrllimited="true" kp="5" forcelimited="true" forcerange="-3.0 3.0" ctrlrange="-7.0 7.0"/>
-    <position joint='jaco_joint_4' name='Ajaco_joint_4' gear="50" ctrllimited="true" kp="5" forcelimited="true" forcerange="-1.0 1.0" ctrlrange="-7.0 7.0"/>
-    <position joint='jaco_joint_5' name='Ajaco_joint_5' gear="50" ctrllimited="true" kp="5" forcelimited="true" forcerange="-1.0 1.0" ctrlrange="-7.0 7.0"/>
-    <position joint='jaco_joint_6' name='Ajaco_joint_6' gear="50" ctrllimited="true" kp="5" forcelimited="true" forcerange="-1.0 1.0" ctrlrange="-7.0 7.0"/>
+    <position joint='jaco_joint_1' name='Ajaco_joint_1' gear="50" ctrllimited="true" kp="5" forcelimited="true" forcerange="-3.0 3.0" ctrlrange="-6.28319 6.28319"/>
+    <position joint='jaco_joint_2' name='Ajaco_joint_2' gear="100" ctrllimited="true" kp="5" forcelimited="true" forcerange="-3.0 3.0" ctrlrange="-2.35 2.35"/>
+    <position joint='jaco_joint_3' name='Ajaco_joint_3' gear="100" ctrllimited="true" kp="5" forcelimited="true" forcerange="-3.0 3.0" ctrlrange="-2.86 2.86"/>
+    <position joint='jaco_joint_4' name='Ajaco_joint_4' gear="50" ctrllimited="true" kp="5" forcelimited="true" forcerange="-3.0 3.0" ctrlrange="-6.28319 6.28319"/>
+    <position joint='jaco_joint_5' name='Ajaco_joint_5' gear="50" ctrllimited="true" kp="5" forcelimited="true" forcerange="-3.0 3.0" ctrlrange="-6.28319 6.28319"/>
+    <position joint='jaco_joint_6' name='Ajaco_joint_6' gear="50" ctrllimited="true" kp="5" forcelimited="true" forcerange="-3.0 3.0" ctrlrange="-6.28319 6.28319"/>
 
     <position joint='jaco_joint_finger_1' name='Ajaco_joint_finger_1'
-      gear='20' ctrllimited="true" ctrlrange="0.0 1.0" forcelimited="true" forcerange="-1.0 1.0" kp="5"/>
+      gear='20' ctrllimited="true" ctrlrange="0.0 1.0" forcelimited="true" forcerange="0.0 2.0" kp="5"/>
 		<position joint='jaco_joint_finger_2' name='Ajaco_joint_finger_2'
-      gear='20' ctrllimited="true" ctrlrange="0.0 1.0" forcelimited="true" forcerange="-1.0 1.0" kp="5"/>
+      gear='20' ctrllimited="true" ctrlrange="0.0 1.0" forcelimited="true" forcerange="0.0 2.0" kp="5"/>
 		<position joint='jaco_joint_finger_3' name='Ajaco_joint_finger_3'
-      gear='20' ctrllimited="true" ctrlrange="0.0 1.0" forcelimited="true" forcerange="-1.0 1.0" kp="5"/>
+      gear='20' ctrllimited="true" ctrlrange="0.0 1.0" forcelimited="true" forcerange="0.0 2.0" kp="5"/>
+
+<!--     <velocity joint="jaco_joint_1" kv="10" forcelimited="true" forcerange="-2000 2000" ctrllimited="true" ctrlrange="-6.28319 6.28319"></velocity>
+    <velocity joint="jaco_joint_2" kv="40" forcelimited="true" forcerange="-2000 2000" ctrllimited="true" ctrlrange="-2.35 2.35"></velocity>
+    <velocity joint="jaco_joint_3" kv="10" forcelimited="true" forcerange="-2000 2000" ctrllimited="true" ctrlrange="-2.86 2.86"></velocity>
+    <velocity joint="jaco_joint_4" kv="4" forcelimited="true" forcerange="-2000 2000" ctrllimited="true" ctrlrange="-6.28319 6.28319"></velocity>
+    <velocity joint="jaco_joint_5" kv="4" forcelimited="true" forcerange="-2000 2000" ctrllimited="true" ctrlrange="-6.28319 6.28319"></velocity>
+    <velocity joint="jaco_joint_6" kv="2" forcelimited="true" forcerange="-2000 2000" ctrllimited="true" ctrlrange="-6.28319 6.28319"></velocity>
+    <position joint="jaco_joint_finger_1" kp="5"  ctrllimited="true" ctrlrange="0 2"></position>
+    <position joint="jaco_joint_finger_2" kp="5"  ctrllimited="true" ctrlrange="0 2"></position>
+    <position joint="jaco_joint_finger_3" kp="5"  ctrllimited="true" ctrlrange="0 2"></position> -->
 	</actuator>
+<!--   <sensor>
+      <jointpos joint='jaco_joint_1'/>
+      <jointpos joint='jaco_joint_2'/>
+      <jointpos joint='jaco_joint_3'/>
+      <jointpos joint='jaco_joint_4'/>
+      <jointpos joint='jaco_joint_5'/>
+      <jointpos joint='jaco_joint_6'/>
+      <jointpos joint='jaco_joint_finger_1'/>
+      <jointpos joint='jaco_joint_finger_2'/>
+      <jointpos joint='jaco_joint_finger_3'/>
+  </sensor> -->
 </mujoco>

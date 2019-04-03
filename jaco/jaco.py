@@ -62,7 +62,7 @@ def _make_model():
     # os.path.dirname(os.path.realpath(__file__))
   # print(os.path.realpath(__file__))
   # print(os.path.join(os.path.dirname( __file__ ), 'jaco_other.xml'))
-  model_path = os.path.join(os.path.dirname( __file__ ), 'jaco_other.xml')
+  model_path = os.path.join(os.path.dirname( __file__ ), 'jaco_pos.xml')
   xml_string = common.read_model(model_path)
   # xml_string = common.read_model('/home/will/code/jaco-simulation/jaco_other.xml')
   # return xml_string
@@ -174,7 +174,7 @@ class JacoReacher(base.Task):
 
     # randomize target position
     angle = self.random.uniform(0, 2 * np.pi)
-    anglez = self.random.uniform(0, 2 * np.pi)
+    anglez = self.random.uniform(0, np.pi)
     radius = self.random.uniform(.05, .30)
 
     physics.named.model.geom_pos['target', 'x'] = radius * np.sin(angle)
@@ -188,6 +188,9 @@ class JacoReacher(base.Task):
     obs['position'] = physics.position()
     obs['to_target'] = physics.finger_to_target()
     obs['velocity'] = physics.velocity()
+    # print('pos: ', obs['position'])
+    # print('tar: ', obs['to_target'])
+    print('dist: ', physics.finger_to_target_distance())
     return obs
 
   def get_reward(self, physics):
