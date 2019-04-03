@@ -190,7 +190,7 @@ class JacoReacher(base.Task):
     obs['velocity'] = physics.velocity()
     # print('pos: ', obs['position'])
     # print('tar: ', obs['to_target'])
-    print('dist: ', physics.finger_to_target_distance())
+    # print('dist: ', physics.finger_to_target_distance())
     return obs
 
   def get_reward(self, physics):
