@@ -62,7 +62,7 @@ def _make_model():
     # os.path.dirname(os.path.realpath(__file__))
   # print(os.path.realpath(__file__))
   # print(os.path.join(os.path.dirname( __file__ ), 'jaco_other.xml'))
-  model_path = os.path.join(os.path.dirname( __file__ ), 'jaco_pos.xml')
+  model_path = os.path.join(os.path.dirname( __file__ ), 'jaco_small_damping.xml')
   xml_string = common.read_model(model_path)
   # xml_string = common.read_model('/home/will/code/jaco-simulation/jaco_other.xml')
   # return xml_string
