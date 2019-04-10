@@ -62,7 +62,7 @@ def _make_model():
     # os.path.dirname(os.path.realpath(__file__))
   # print(os.path.realpath(__file__))
   # print(os.path.join(os.path.dirname( __file__ ), 'jaco_other.xml'))
-  model_path = os.path.join(os.path.dirname( __file__ ), 'jaco_small_damping.xml')
+  model_path = os.path.join(os.path.dirname( __file__ ), 'jaco_pos.xml')
   xml_string = common.read_model(model_path)
   # xml_string = common.read_model('/home/will/code/jaco-simulation/jaco_other.xml')
   # return xml_string
@@ -171,6 +171,11 @@ class JacoReacher(base.Task):
     """Sets the state of the environment at the start of each episode."""
     # physics.named.model.geom_size['target', 0] = self._target_size
     randomizers.randomize_limited_and_rotational_joints(physics, self.random)
+    for _ in range(500):
+      physics.step()
+
+    physics.data.time = 0
+    self._timeout_progress = 0
 
     # randomize target position
     angle = self.random.uniform(0, 2 * np.pi)
@@ -180,7 +185,6 @@ class JacoReacher(base.Task):
     physics.named.model.geom_pos['target', 'x'] = radius * np.sin(angle)
     physics.named.model.geom_pos['target', 'y'] = radius * np.cos(angle)
     physics.named.model.geom_pos['target', 'z'] = radius * np.sin(anglez)
-
 
   def get_observation(self, physics):
     """Returns an observation of the (bounded) physics state."""
@@ -193,9 +197,15 @@ class JacoReacher(base.Task):
     # print('dist: ', physics.finger_to_target_distance())
     return obs
 
+  def before_step(self, action, physics):
+    super(JacoReacher, self).before_step(action, physics)
+    physics.action_cost = 0.01 * np.square(action).sum()
+
   def get_reward(self, physics):
     """Returns a sparse or a smooth reward, as specified in the constructor."""
 
     # radii = physics.named.model.geom_size[['target', 'jaco_link_fingertip_1'], 0].sum()
     # return rewards.tolerance(physics.finger_to_target_distance(), (0, radii))
-    return -physics.finger_to_target_distance()
+    reward = -physics.finger_to_target_distance()
+    reward -= physics.action_cost
+    return reward
