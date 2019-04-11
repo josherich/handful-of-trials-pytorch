@@ -29,7 +29,7 @@ class Agent:
         if isinstance(self.env, DotMap):
             raise ValueError("Environment must be provided to the agent at initialization.")
 
-    def sample(self, horizon, policy, record_fname=None):
+    def sample(self, horizon, policy, record_fname=None, control=False):
         """Samples a rollout from the agent.
 
         Arguments:
@@ -41,6 +41,7 @@ class Agent:
         Returns: (dict) A dictionary containing data from the rollout.
             The keys of the dictionary are 'obs', 'ac', and 'reward_sum'.
         """
+        solution = None
         video_record = record_fname is not None
         recorder = None if not video_record else VideoRecorder(self.env, record_fname)
 
@@ -48,11 +49,21 @@ class Agent:
         O, A, reward_sum, done = [self.env.reset()], [], 0, False
 
         policy.reset()
+        if control:
+            solution = self.env.IKSolve(O[0])
+
         for t in range(horizon):
             if video_record:
                 recorder.capture_frame()
             start = time.time()
-            A.append(policy.act(O[t], t))
+            if control:
+                force = solution - O[t][0:9]
+                print('motor: ', force)
+                A.append(force * 20)
+            else:
+                solution = policy.act(O[t], t)
+                A.append(solution)
+
             times.append(time.time() - start)
 
             obs, reward, done, info = self.env.step(A[t])

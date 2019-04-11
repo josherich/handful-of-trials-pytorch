@@ -2,7 +2,7 @@ from dm_control import suite
 from jaco import jaco
 
 import inspect
-import dm_control2gym
+import jaco.dm_control2gym as dm_control2gym
 
 LOCAL_DOMAINS = {name: module for name, module in locals().items()
             if inspect.ismodule(module) and hasattr(module, 'SUITE')}

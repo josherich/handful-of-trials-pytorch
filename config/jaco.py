@@ -16,6 +16,7 @@ from DotmapUtils import get_required_argument
 from jaco.jacoEnv import env
 
 TORCH_DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+_ACTION_COST_D = 0.0025
 
 
 class PtModel(nn.Module):
@@ -157,7 +158,7 @@ class JacoConfigModule:
 
         load_model = model_init_cfg.get("load_model", False)
 
-        assert load_model is False, 'Has yet to support loading model'
+        # assert load_model is False, 'Has yet to support loading model'
 
         model = PtModel(ensemble_size,
                         self.MODEL_IN, self.MODEL_OUT * 2).to(TORCH_DEVICE)
@@ -173,3 +174,26 @@ class JacoConfigModule:
 
 
 CONFIG_MODULE = JacoConfigModule
+
+
+# {'ctrl_cfg': {'env': <dm_control2gym.wrapper.DmControlWrapper object at 0x12dc9d748>,
+#               'opt_cfg': {'ac_cost_fn': <function JacoConfigModule.ac_cost_fn at 0x13528d2f0>,
+#                           'cfg': {'alpha': 0.1,
+#                                   'max_iters': 5,
+#                                   'num_elites': 40,
+#                                   'popsize': 400},
+#                           'mode': 'CEM',
+#                           'obs_cost_fn': <bound method JacoConfigModule.obs_cost_fn of <jaco.JacoConfigModule object at 0x13526ac50>>,
+#                           'plan_hor': 25},
+#               'prop_cfg': {'mode': 'TSinf',
+#                            'model_init_cfg': {'model_constructor': <bound method JacoConfigModule.nn_constructor of <jaco.JacoConfigModule object at 0x13526ac50>>,
+#                                               'num_nets': 5},
+#                            'model_train_cfg': {'epochs': 5},
+#                            'npart': 20,
+#                            'obs_postproc': <function JacoConfigModule.obs_postproc at 0x13528d0d0>,
+#                            'targ_proc': <function JacoConfigModule.targ_proc at 0x13528d158>},
+#               'update_fns': [<bound method JacoConfigModule.update_goal of <jaco.JacoConfigModule object at 0x13526ac50>>]},
+#  'exp_cfg': {'exp_cfg': {'nrollouts_per_iter': 1, 'ntrain_iters': 100},
+#              'log_cfg': {'logdir': 'log'},
+#              'sim_cfg': {'env': <dm_control2gym.wrapper.DmControlWrapper object at 0x12dc9d748>,
+#                          'task_hor': 150}}}

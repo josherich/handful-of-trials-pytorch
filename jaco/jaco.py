@@ -41,7 +41,7 @@ import ipdb
 
 _DEFAULT_TIME_LIMIT = 10
 SUITE = containers.TaggedTasks()
-
+_ACTION_COST_D = 0.0025
 
 def get_model_and_assets():
   """Returns a tuple containing the model XML string and a dict of assets."""
@@ -180,7 +180,7 @@ class JacoReacher(base.Task):
     # randomize target position
     angle = self.random.uniform(0, 2 * np.pi)
     anglez = self.random.uniform(0, np.pi)
-    radius = self.random.uniform(.05, .30)
+    radius = self.random.uniform(.10, .30)
 
     physics.named.model.geom_pos['target', 'x'] = radius * np.sin(angle)
     physics.named.model.geom_pos['target', 'y'] = radius * np.cos(angle)
@@ -199,7 +199,7 @@ class JacoReacher(base.Task):
 
   def before_step(self, action, physics):
     super(JacoReacher, self).before_step(action, physics)
-    physics.action_cost = 0.01 * np.square(action).sum()
+    physics.action_cost = _ACTION_COST_D * np.square(action).sum()
 
   def get_reward(self, physics):
     """Returns a sparse or a smooth reward, as specified in the constructor."""
