@@ -103,7 +103,7 @@ class MBExperiment:
             for j in range(max(self.neval, self.nrollouts_per_iter)):
                 samples.append(
                     self.agent.sample(
-                        self.task_hor, self.policy
+                        self.task_hor, self.policy, os.path.join(iter_dir, "rollout%d.mp4" % j)
                     )
                 )
             print("Rewards obtained:", [sample["reward_sum"] for sample in samples[:self.neval]])

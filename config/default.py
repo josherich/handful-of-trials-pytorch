@@ -58,6 +58,9 @@ def create_config(env_name, ctrl_type, ctrl_args, overrides, logdir):
     _create_exp_config(cfg.exp_cfg, cfg_module, logdir, type_map)
     _create_ctrl_config(cfg.ctrl_cfg, cfg_module, ctrl_type, ctrl_args, type_map)
 
+    for (k, v) in overrides:
+        apply_override(cfg, type_map, k, v)
+
     return cfg
 
 
@@ -131,29 +134,29 @@ def _create_ctrl_config(ctrl_cfg, cfg_module, ctrl_type, ctrl_args, type_map):
     ctrl_cfg.opt_cfg.cfg = cfg_module.OPT_CFG[ctrl_cfg.opt_cfg.mode]
 
 
-# def apply_override(cfg, type_map, override_key, value, prefix=''):
-#     """Modifies the configuration to apply the given override.
-#     """
-#     pth = override_key.split(".")
-#     filter_pth = prefix.split(".")
-#     if len(prefix) == 0 or pth[:len(filter_pth)] == prefix.split("."):
-#         cur_map = cfg
-#         cur_type_map = type_map
-#         try:
-#             for key in pth[:-1]:
-#                 cur_map = cur_map[key]
-#                 cur_type_map = cur_type_map[key]
-#         except KeyError:
-#             raise KeyError(
-#                 "Either %s cannot be overridden (is a function/object/class/etc.) or "
-#                 "the type map is not updated." % override_key
-#             )
-#         if cur_type_map.get(pth[-1], None) is None:
-#             raise KeyError(
-#                 "Either %s cannot be overridden (is a function/object/class/etc.) or "
-#                 "the type map is not updated." % override_key
-#             )
-#         cur_map[pth[-1]] = cur_type_map[pth[-1]](value)
+def apply_override(cfg, type_map, override_key, value, prefix=''):
+    """Modifies the configuration to apply the given override.
+    """
+    pth = override_key.split(".")
+    filter_pth = prefix.split(".")
+    if len(prefix) == 0 or pth[:len(filter_pth)] == prefix.split("."):
+        cur_map = cfg
+        cur_type_map = type_map
+        try:
+            for key in pth[:-1]:
+                cur_map = cur_map[key]
+                cur_type_map = cur_type_map[key]
+        except KeyError:
+            raise KeyError(
+                "Either %s cannot be overridden (is a function/object/class/etc.) or "
+                "the type map is not updated." % override_key
+            )
+        if cur_type_map.get(pth[-1], None) is None:
+            raise KeyError(
+                "Either %s cannot be overridden (is a function/object/class/etc.) or "
+                "the type map is not updated." % override_key
+            )
+        cur_map[pth[-1]] = cur_type_map[pth[-1]](value)
 
 
 def make_bool(arg):

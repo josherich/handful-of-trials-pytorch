@@ -4,6 +4,7 @@ from __future__ import absolute_import
 
 import numpy as np
 import gym
+import os
 
 import torch
 from torch import nn as nn
@@ -26,7 +27,7 @@ class PtModel(nn.Module):
 
         self.in_features = in_features
         self.out_features = out_features
-        print(in_features, out_features)
+
         self.lin0_w, self.lin0_b = get_affine_params(ensemble_size, in_features, 200)
 
         self.lin1_w, self.lin1_b = get_affine_params(ensemble_size, 200, 200)
@@ -35,8 +36,8 @@ class PtModel(nn.Module):
 
         self.lin3_w, self.lin3_b = get_affine_params(ensemble_size, 200, out_features)
 
-        self.inputs_mu = nn.Parameter(torch.zeros(in_features), requires_grad=False)
-        self.inputs_sigma = nn.Parameter(torch.zeros(in_features), requires_grad=False)
+        self.inputs_mu = nn.Parameter(torch.zeros((1, in_features)), requires_grad=False)
+        self.inputs_sigma = nn.Parameter(torch.zeros((1, in_features)), requires_grad=False)
 
         self.max_logvar = nn.Parameter(torch.ones(1, out_features // 2, dtype=torch.float32) / 2.0)
         self.min_logvar = nn.Parameter(- torch.ones(1, out_features // 2, dtype=torch.float32) * 10.0)
@@ -87,6 +88,13 @@ class PtModel(nn.Module):
 
         return mean, torch.exp(logvar)
 
+    def save(self, directory):
+        torch.save(self.state_dict(), '%s/model.pth' % (directory))
+
+    def load(self, directory):
+        state_dict = torch.load('%s/model.pth' % (directory),  map_location=lambda storage, loc: storage)
+        # print(state_dict)
+        self.load_state_dict(state_dict)
 
 class JacoConfigModule:
     ENV_NAME = "MBRLJaco"
@@ -153,6 +161,10 @@ class JacoConfigModule:
 
         model = PtModel(ensemble_size,
                         self.MODEL_IN, self.MODEL_OUT * 2).to(TORCH_DEVICE)
+        if load_model:
+            print('=== load model')
+            model_dir = model_init_cfg.get("model_dir", None)
+            model.load(model_dir)
         # * 2 because we output both the mean and the variance
 
         model.optim = torch.optim.Adam(model.parameters(), lr=0.001)

@@ -305,8 +305,7 @@ class MPC(Controller):
 
         Returns: None
         """
-        # TODO: implement saving model for pytorch
-        # self.model.save(iter_logdir if self.save_all_models else primary_logdir)
+        self.model.save(iter_logdir if self.save_all_models else primary_logdir)
         if self.log_particles:
             savemat(os.path.join(iter_logdir, "predictions.mat"), {"predictions": self.pred_particles})
             self.pred_particles = []
