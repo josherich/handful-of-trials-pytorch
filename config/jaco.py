@@ -99,7 +99,7 @@ class PtModel(nn.Module):
 
 class JacoConfigModule:
     ENV_NAME = "MBRLJaco"
-    TASK_HORIZON = 150
+    TASK_HORIZON = 200
     NTRAIN_ITERS = 100
     NROLLOUTS_PER_ITER = 1
     PLAN_HOR = 25
@@ -151,7 +151,7 @@ class JacoConfigModule:
 
     @staticmethod
     def ac_cost_fn(acs):
-        return 0.01 * (acs ** 2).sum(dim=1)
+        return _ACTION_COST_D * (acs ** 2).sum(dim=1)
 
     def nn_constructor(self, model_init_cfg):
         ensemble_size = get_required_argument(model_init_cfg, "num_nets", "Must provide ensemble size")
