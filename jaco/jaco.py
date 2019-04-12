@@ -170,17 +170,17 @@ class JacoReacher(base.Task):
 
     """Sets the state of the environment at the start of each episode."""
     # physics.named.model.geom_size['target', 0] = self._target_size
-    randomizers.randomize_limited_and_rotational_joints(physics, self.random)
-    for _ in range(500):
-      physics.step()
+    # randomizers.randomize_limited_and_rotational_joints(physics, self.random)
+    # for _ in range(100):
+      # physics.step()
 
     physics.data.time = 0
     self._timeout_progress = 0
 
     # randomize target position
-    angle = self.random.uniform(0, 2 * np.pi)
+    angle = self.random.uniform(0, np.pi)
     anglez = self.random.uniform(0, np.pi)
-    radius = self.random.uniform(.10, .30)
+    radius = self.random.uniform(.30, .60)
 
     physics.named.model.geom_pos['target', 'x'] = radius * np.sin(angle)
     physics.named.model.geom_pos['target', 'y'] = radius * np.cos(angle)
