@@ -130,7 +130,7 @@ class DmControlWrapper(core.Env):
     def IKSolve(self, obs):
         _TOL = 1e-14
         _MAX_STEPS = 100
-        site_name = 'finger'
+        site_name = 'palm'
         target_pos = self.dmcenv.physics.named.data.geom_xpos['target']
         target_quat = self.dmcenv.physics.named.model.geom_quat['target']
         print('target pos: ', target_pos)

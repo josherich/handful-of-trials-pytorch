@@ -126,12 +126,12 @@
                                     <joint name="jaco_joint_6" axis="0 0 -1" damping="30" limited="true" range="-6.28319 6.28319"/>
                                     <geom name="jaco_joint_6" contype="1" conaffinity="1" mesh="jaco_link_hand" rgba=".13 .13 .13 1"/>
 
+                                    <site name="palm" pos="0.0 0.0 -0.15" type="sphere" size="0.01"/>
 
                                     <body name="jaco_link_finger_1" pos="-0.03978 0 -0.10071" quat="-0.414818 -0.329751 -0.663854 0.52772">
                                         <inertial pos="0.0485761 -0.000715511 2.09499e-008" quat="0.507589 0.507348 0.492543 0.492294" mass="0.0379077" diaginertia="4.00709e-005 4.00528e-005 2.156e-006" />
                                         <joint name="jaco_joint_finger_1" limited="true" axis="0 0 1" damping="30" range="0 2"/>
                                         <geom name="jaco_link_fingertip_1" mesh="jaco_link_finger_1"/>
-										<site name="finger" pos="0 0 0" type="sphere" size="0.01"/>
                                     </body>
                                     <body name="jaco_link_finger_2" pos="0.03569 -0.0216 -0.10071" quat="0.625248 -0.567602 0.434845 0.312735">
                                         <inertial pos="0.0485761 -0.000715511 2.09499e-008" quat="0.507589 0.507348 0.492543 0.492294" mass="0.0379077" diaginertia="4.00709e-005 4.00528e-005 2.156e-006" />
