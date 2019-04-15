@@ -33,6 +33,10 @@ mv mujoco200_linux.zip ~/.mujoco
 
 2. install dm_control
 
+```
+pip install git+git://github.com/deepmind/dm_control.git
+```
+
 3. install dm_control2gym
 
 ```
@@ -43,7 +47,7 @@ pip install .
 4. install dependencies
 
 ```
-pip install -r requirement.txt
+pip install -r requirements.txt
 ```
 
 ## Running Experiments
@@ -53,7 +57,7 @@ Experiments for a particular environment can be run using:
 ```
 python mbexp.py
     -env    ENV       (required) The name of the environment. Select from
-                                 [cartpole, reacher, pusher, halfcheetah].
+                                 [cartpole, reacher, pusher, halfcheetah, jaco, manipulator].
 ```
 
 Results will be saved in `<logdir>/<date+time of experiment start>/`.
@@ -72,6 +76,12 @@ Trial data will be contained in `logs.mat`, with the following contents:
 ```
 
 To visualize the result, please take a look at `plotter.ipynb`
+
+## Render Results
+
+```
+python render.py -env ENV -model-dir path/to/model/ -logdir path/to/log
+```
 
 ## Acknowledgement
 
