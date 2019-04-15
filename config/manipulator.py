@@ -88,6 +88,13 @@ class PtModel(nn.Module):
 
         return mean, torch.exp(logvar)
 
+    def save(self, directory):
+        torch.save(self.state_dict(), '%s/model.pth' % (directory))
+
+    def load(self, directory):
+        state_dict = torch.load('%s/model.pth' % (directory),  map_location=lambda storage, loc: storage)
+        self.load_state_dict(state_dict)
+
 
 class ManipulatorConfigModule:
     ENV_NAME = "MBRLManipulator-v0"
