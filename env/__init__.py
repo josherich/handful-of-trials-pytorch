@@ -19,3 +19,8 @@ register(
     id='MBRLHalfCheetah-v0',
     entry_point='env.half_cheetah:HalfCheetahEnv'
 )
+
+register(
+    id='MBRLManipulator-v0',
+    entry_point='env.manipulator:ManipulatorEnv'
+)
