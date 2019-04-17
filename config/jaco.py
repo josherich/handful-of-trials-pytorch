@@ -99,11 +99,11 @@ class PtModel(nn.Module):
 
 class JacoConfigModule:
     ENV_NAME = "MBRLJaco"
-    TASK_HORIZON = 200
+    TASK_HORIZON = 150
     NTRAIN_ITERS = 100
     NROLLOUTS_PER_ITER = 1
     PLAN_HOR = 25
-    MODEL_IN, MODEL_OUT = 30, 21
+    MODEL_IN, MODEL_OUT = 33, 24
     GP_NINDUCING_POINTS = 200
 
     def __init__(self):
@@ -146,6 +146,7 @@ class JacoConfigModule:
         # position[0:8] target[9:11] velocity[12:20]
         # print(obs[:,9:12].mean())
         cost = np.sum(np.square(obs[:,9:12]), axis=1)
+        cost -= obs[:,23]
 
         return torch.from_numpy(cost).float().to(TORCH_DEVICE)
 
@@ -157,43 +158,15 @@ class JacoConfigModule:
         ensemble_size = get_required_argument(model_init_cfg, "num_nets", "Must provide ensemble size")
 
         load_model = model_init_cfg.get("load_model", False)
-
-        # assert load_model is False, 'Has yet to support loading model'
-
         model = PtModel(ensemble_size,
                         self.MODEL_IN, self.MODEL_OUT * 2).to(TORCH_DEVICE)
         if load_model:
-            print('=== load model')
             model_dir = model_init_cfg.get("model_dir", None)
             model.load(model_dir)
         # * 2 because we output both the mean and the variance
-
         model.optim = torch.optim.Adam(model.parameters(), lr=0.001)
 
         return model
 
 
 CONFIG_MODULE = JacoConfigModule
-
-
-# {'ctrl_cfg': {'env': <dm_control2gym.wrapper.DmControlWrapper object at 0x12dc9d748>,
-#               'opt_cfg': {'ac_cost_fn': <function JacoConfigModule.ac_cost_fn at 0x13528d2f0>,
-#                           'cfg': {'alpha': 0.1,
-#                                   'max_iters': 5,
-#                                   'num_elites': 40,
-#                                   'popsize': 400},
-#                           'mode': 'CEM',
-#                           'obs_cost_fn': <bound method JacoConfigModule.obs_cost_fn of <jaco.JacoConfigModule object at 0x13526ac50>>,
-#                           'plan_hor': 25},
-#               'prop_cfg': {'mode': 'TSinf',
-#                            'model_init_cfg': {'model_constructor': <bound method JacoConfigModule.nn_constructor of <jaco.JacoConfigModule object at 0x13526ac50>>,
-#                                               'num_nets': 5},
-#                            'model_train_cfg': {'epochs': 5},
-#                            'npart': 20,
-#                            'obs_postproc': <function JacoConfigModule.obs_postproc at 0x13528d0d0>,
-#                            'targ_proc': <function JacoConfigModule.targ_proc at 0x13528d158>},
-#               'update_fns': [<bound method JacoConfigModule.update_goal of <jaco.JacoConfigModule object at 0x13526ac50>>]},
-#  'exp_cfg': {'exp_cfg': {'nrollouts_per_iter': 1, 'ntrain_iters': 100},
-#              'log_cfg': {'logdir': 'log'},
-#              'sim_cfg': {'env': <dm_control2gym.wrapper.DmControlWrapper object at 0x12dc9d748>,
-#                          'task_hor': 150}}}

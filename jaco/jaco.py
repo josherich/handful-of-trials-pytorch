@@ -14,7 +14,6 @@
 # ============================================================================
 
 """Jaco arm domain."""
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -39,82 +38,48 @@ from six.moves import xrange  # pylint: disable=redefined-builtin
 
 import ipdb
 
-_DEFAULT_TIME_LIMIT = 10
 SUITE = containers.TaggedTasks()
+
+_DEFAULT_TIME_LIMIT = 10
 _ACTION_COST_D = 0.0025
+_FLOOR_H = 0.1
+_HEIGHT_COST_D = 0.001
+_CONTROL_TIMESTEP = 0.01
 
 def get_model_and_assets():
   """Returns a tuple containing the model XML string and a dict of assets."""
   return _make_model(), common.ASSETS
 
-
-
 @SUITE.add('benchmarking', 'easy')
 def basic(time_limit=_DEFAULT_TIME_LIMIT, random=None):
-  """Returns the Cartpole Balance task."""
-  # ipdb.set_trace()
   physics = Physics.from_xml_string(*get_model_and_assets())
   task = JacoReacher(random=random)
-  return control.Environment(physics, task, time_limit=time_limit)
-
+  return control.Environment(physics, task, control_timestep=_CONTROL_TIMESTEP, time_limit=time_limit)
 
 def _make_model():
-    # os.path.dirname(os.path.realpath(__file__))
-  # print(os.path.realpath(__file__))
-  # print(os.path.join(os.path.dirname( __file__ ), 'jaco_other.xml'))
   model_path = os.path.join(os.path.dirname( __file__ ), 'jaco_pos.xml')
   xml_string = common.read_model(model_path)
-  # xml_string = common.read_model('/home/will/code/jaco-simulation/jaco_other.xml')
-  # return xml_string
   mjcf = etree.fromstring(xml_string)
-# xml_string = _make_model()
-# import ipdb; ipdb.set_trace()
-
-  # if n_poles == 1:
-  #   return xml_string
-  # mjcf = etree.fromstring(xml_string)
-  # parent = mjcf.find('./worldbody/body/body')  # Find first pole.
-  # # Make chain of poles.
-  # for pole_index in xrange(2, n_poles+1):
-  #   child = etree.Element('body', name='pole_{}'.format(pole_index),
-  #                         pos='0 0 1', childclass='pole')
-  #   etree.SubElement(child, 'joint', name='hinge_{}'.format(pole_index))
-  #   etree.SubElement(child, 'geom', name='pole_{}'.format(pole_index))
-  #   parent.append(child)
-  #   parent = child
-  # Move plane down.
-  # floor = mjcf.find('./worldbody/geom')
-  # floor.set('pos', '0 0 {}'.format(1 - n_poles - .05))
-  # # Move cameras back.
-  # cameras = mjcf.findall('./worldbody/camera')
-  # cameras[0].set('pos', '0 {} 1'.format(-1 - 2*n_poles))
-  # cameras[1].set('pos', '0 {} 2'.format(-2*n_poles))
   return etree.tostring(mjcf, pretty_print=True)
 
-
 class Physics(mujoco.Physics):
-  """Physics simulation with additional features for the Acrobot domain."""
-
-  # def horizontal(self):
-  #   """Returns horizontal (x) component of body frame z-axes."""
-  #   return self.named.data.xmat[['upper_arm', 'lower_arm'], 'xz']
-  #
-  # def vertical(self):
-  #   """Returns vertical (z) component of body frame z-axes."""
-  #   return self.named.data.xmat[['upper_arm', 'lower_arm'], 'zz']
 
   def finger_to_target_distance(self):
     """Returns the distance from the tip to the target."""
-    # ipdb.set_trace()
     tip_to_target = (self.named.data.geom_xpos['target'] -
-                     self.named.data.geom_xpos['jaco_link_fingertip_1'])
+                     self.named.data.site_xpos['palm'])
     return np.linalg.norm(tip_to_target)
+
+  def target_pos(self):
+    return self.named.data.geom_xpos['target']
+
+  def target_height(self):
+    return self.named.data.geom_xpos['target', 'z']
 
   def finger_to_target(self):
     """Returns the distance from the tip to the target."""
-    # ipdb.set_trace()
     tip_to_target = (self.named.data.geom_xpos['target'] -
-                     self.named.data.geom_xpos['jaco_link_fingertip_1'])
+                     self.named.data.site_xpos['palm'])
     return tip_to_target
 
   def get_target(self):
@@ -123,29 +88,20 @@ class Physics(mujoco.Physics):
   def move_hand(self, position):
     self.named.data.mocap_pos[0] = position
 
-  # def orientations(self):
-  #   """Returns the sines and cosines of the pole angles."""
-  #   return np.concatenate((self.horizontal(), self.vertical()))
-
+  def ground_penalty(self):
+    pz = np.array([self.named.data.geom_xpos['jaco_joint_1', 'z'],
+     self.named.data.geom_xpos['jaco_joint_2', 'z'],
+     self.named.data.geom_xpos['jaco_joint_3', 'z'],
+     self.named.data.geom_xpos['jaco_joint_4', 'z'],
+     self.named.data.geom_xpos['jaco_joint_5', 'z'],
+     self.named.data.geom_xpos['jaco_joint_6', 'z'],
+    ]) - _FLOOR_H
+    pz = np.fmin(pz - _FLOOR_H, np.zeros(6))
+    return _HEIGHT_COST_D * np.linalg.norm(pz)
 
 class JacoReacher(base.Task):
-  """A Cartpole `Task` to balance the pole.
-  State is initialized either close to the target configuration or at a random
-  configuration.
-  """
 
   def __init__(self, random=None):
-    """Initializes an instance of `Balance`.
-    Args:
-      swing_up: A `bool`, which if `True` sets the cart to the middle of the
-        slider and the pole pointing towards the ground. Otherwise, sets the
-        cart to a random position on the slider and the pole to a random
-        near-vertical position.
-      sparse: A `bool`, whether to return a sparse or a smooth reward.
-      random: Optional, either a `numpy.random.RandomState` instance, an
-        integer seed for creating a new `RandomState`, or None to select a seed
-        automatically (default).
-    """
     super(JacoReacher, self).__init__(random=random)
 
   def initialize_episode(self, physics):
@@ -155,22 +111,9 @@ class JacoReacher(base.Task):
     Args:
       physics: An instance of `Physics`.
     """
-    # nv = physics.model.nv
-    # if self._swing_up:
-    #   physics.named.data.qpos['slider'] = .01*self.random.randn()
-    #   physics.named.data.qpos['hinge_1'] = np.pi + .01*self.random.randn()
-    #   physics.named.data.qpos[2:] = .1*self.random.randn(nv - 2)
-    # else:
-    #   physics.named.data.qpos['slider'] = self.random.uniform(-.1, .1)
-    #   physics.named.data.qpos[1:] = self.random.uniform(-.034, .034, nv - 1)
-    # physics.named.data.qvel[:] = 0.01 * self.random.randn(physics.model.nv)
-    
     # physics.named.model.geom_size['target', 0] = self._target_size
     # randomizers.randomize_limited_and_rotational_joints(physics, self.random)
 
-    """Sets the state of the environment at the start of each episode."""
-    # physics.named.model.geom_size['target', 0] = self._target_size
-    # randomizers.randomize_limited_and_rotational_joints(physics, self.random)
     # for _ in range(100):
       # physics.step()
 
@@ -178,23 +121,21 @@ class JacoReacher(base.Task):
     self._timeout_progress = 0
 
     # randomize target position
-    angle = self.random.uniform(0, np.pi)
+    angle = self.random.uniform(0, 2 * np.pi)
     anglez = self.random.uniform(0, np.pi)
     radius = self.random.uniform(.30, .60)
 
-    physics.named.model.geom_pos['target', 'x'] = radius * np.sin(angle)
-    physics.named.model.geom_pos['target', 'y'] = radius * np.cos(angle)
-    physics.named.model.geom_pos['target', 'z'] = radius * np.sin(anglez)
+    physics.named.data.qpos[['target_x', 'target_y', 'target_z']] = radius * np.sin(angle), radius * np.cos(angle), radius * np.sin(anglez)
+    physics.named.data.qpos[['target_x', 'target_y', 'target_z']] = radius * np.sin(angle), radius * np.cos(angle), 0
+    # physics.named.data.qvel[['target_x', 'target_y', 'target_z']] = 0,0,0
 
   def get_observation(self, physics):
     """Returns an observation of the (bounded) physics state."""
     obs = collections.OrderedDict()
-    obs['position'] = physics.position()
+    obs['position'] = physics.position()[0:9]
     obs['to_target'] = physics.finger_to_target()
-    obs['velocity'] = physics.velocity()
-    # print('pos: ', obs['position'])
-    # print('tar: ', obs['to_target'])
-    # print('dist: ', physics.finger_to_target_distance())
+    obs['velocity'] = physics.velocity()[0:9]
+    obs['target'] = physics.target_pos()
     return obs
 
   def before_step(self, action, physics):
@@ -203,9 +144,8 @@ class JacoReacher(base.Task):
 
   def get_reward(self, physics):
     """Returns a sparse or a smooth reward, as specified in the constructor."""
-
-    # radii = physics.named.model.geom_size[['target', 'jaco_link_fingertip_1'], 0].sum()
-    # return rewards.tolerance(physics.finger_to_target_distance(), (0, radii))
     reward = -physics.finger_to_target_distance()
     reward -= physics.action_cost
+    # reward -= physics.ground_penalty()
+    reward += physics.target_height()
     return reward
