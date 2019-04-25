@@ -55,6 +55,11 @@ def position_penalty(physics, joints_z):
   pz = np.fmin(pz - _FLOOR_H, np.zeros(9))
   return _HEIGHT_COST_D * np.linalg.norm(pz)
 
+def ef_pose_penalty(ef_angle):
+  COST_D = 0.1
+  cost = COST_D * np.arccos(np.dot(ef_angle, [0,0,-1]) / np.linalg.norm(ef_angle))
+  return cost
+
 @SUITE.add('benchmarking', 'easy')
 def basic(time_limit=_DEFAULT_TIME_LIMIT, random=None):
   physics = Physics.from_xml_string(*get_model_and_assets())
@@ -93,6 +98,7 @@ class Physics(mujoco.Physics):
   def move_hand(self, position):
     self.named.data.mocap_pos[0] = position
 
+  # todo: extremely slow, should parallel, or manually compute
   def ground_penalty(self):
     joints_z = [
       self.named.data.geom_xpos['jaco_joint_1', 'z'],
@@ -106,6 +112,10 @@ class Physics(mujoco.Physics):
       self.named.data.geom_xpos['jaco_link_fingertip_3', 'z'],
     ]
     return position_penalty(self, joints_z)
+
+  def pose_penalty(self):
+    ef_angle = self.finger_to_target()
+    return ef_pose_penalty(ef_angle)
 
 class JacoReacher(base.Task):
 
@@ -129,13 +139,12 @@ class JacoReacher(base.Task):
     self._timeout_progress = 0
 
     # randomize target position
-    angle = self.random.uniform(0, 2 * np.pi)
+    angle = self.random.uniform(np.pi, 2 * np.pi)
     anglez = self.random.uniform(0, np.pi)
     radius = self.random.uniform(.30, .60)
 
-    physics.named.data.qpos[['target_x', 'target_y', 'target_z']] = radius * np.sin(angle), radius * np.cos(angle), radius * np.sin(anglez)
-    physics.named.data.qpos[['target_x', 'target_y', 'target_z']] = radius * np.sin(angle), radius * np.cos(angle), 0
-    # physics.named.data.qvel[['target_x', 'target_y', 'target_z']] = 0,0,0
+    physics.named.data.qpos[['target_x', 'target_y', 'target_z']] = radius * np.cos(angle), radius * np.sin(angle), 0.04
+    physics.named.data.qpos[['jaco_joint_1', 'jaco_joint_2']] = [np.pi*1.5, -np.pi/4]
 
   def get_observation(self, physics):
     """Returns an observation of the (bounded) physics state."""
@@ -154,6 +163,6 @@ class JacoReacher(base.Task):
     """Returns a sparse or a smooth reward, as specified in the constructor."""
     reward = -physics.finger_to_target_distance()
     reward -= physics.action_cost
-    reward -= physics.ground_penalty()
+    reward -= physics.pose_penalty()
     reward += physics.target_height()
     return reward

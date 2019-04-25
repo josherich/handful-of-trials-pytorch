@@ -14,7 +14,7 @@ from config.utils import swish, get_affine_params
 from DotmapUtils import get_required_argument
 
 from jaco.jacoEnv import env
-from jaco.jaco import position_penalty
+from jaco.jaco import position_penalty, ef_pose_penalty
 from dm_control.mujoco.wrapper import mjbindings
 mjlib = mjbindings.mjlib
 
@@ -146,27 +146,31 @@ class JacoConfigModule:
         assert isinstance(obs, torch.Tensor)
 
         obs = obs.detach().cpu().numpy()
-        # position[0:8] target[9:11] velocity[12:20]
-        # print(obs[:,9:12].mean())
         cost = np.sum(np.square(obs[:,9:12]), axis=1)
         cost -= obs[:,23]
 
         return torch.from_numpy(cost).float().to(TORCH_DEVICE)
 
     def pose_cost_fn(self, obs):
+        COST_D = 0.1
+        ef_angle = obs[:,9:12]
+        cost = COST_D * np.arccos(np.dot(ef_angle, [0,0,-1]) / np.linalg.norm(ef_angle, axis=1))
+        return torch.from_numpy(cost).float().to(TORCH_DEVICE)
+
+    def pose_height_cost_fn(self, obs):
         pz_sum = 0
         physics = self.ENV.dmcenv.physics.copy(share_model=True)
         dtype = physics.data.qpos.dtype
         for o in obs:
             physics.named.data.qpos[[
-                'jaco_joint_1', 
-                'jaco_joint_2', 
-                'jaco_joint_3', 
-                'jaco_joint_4', 
-                'jaco_joint_5', 
-                'jaco_joint_6', 
-                'jaco_joint_finger_1', 
-                'jaco_joint_finger_2', 
+                'jaco_joint_1',
+                'jaco_joint_2',
+                'jaco_joint_3',
+                'jaco_joint_4',
+                'jaco_joint_5',
+                'jaco_joint_6',
+                'jaco_joint_finger_1',
+                'jaco_joint_finger_2',
                 'jaco_joint_finger_3',]] = o.cpu()[0:9]
             mjlib.mj_kinematics(physics.model.ptr, physics.data.ptr)
 

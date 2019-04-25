@@ -75,7 +75,7 @@
 			<joint armature="0" axis="0 0 1" damping="0" limited="true" name="target_z" pos="0 0 0" range="-1.5 1.5" ref="0" stiffness="1" type="slide"/>
 			<geom conaffinity="0" contype="0" name="target" pos="0 0 0.02" rgba="0.9 0.2 0.2 1" size=".06" type="sphere"/>
 		</body> -->
-		<geom name="base" pos="0 0 .01" type="sphere" rgba="0.9 0.2 0.2 1" size=".06"/>
+		<geom name="base" pos="0 0 0" type="ellipsoid" rgba="0.9 0.2 0.2 1" size="0.3 0.3 0.2"/>
 
 		<camera name="view1" pos="0 0 2.0" zaxis="0 0 1" fovy="45" ipd="0.068"/>
 	    <camera name="view2" pos="2.0 1.4 0.3" xyaxes="-0.8 1 0 0 0 1" fovy="45" ipd="0.068"/>
