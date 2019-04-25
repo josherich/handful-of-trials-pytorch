@@ -42,19 +42,24 @@ SUITE = containers.TaggedTasks()
 
 _DEFAULT_TIME_LIMIT = 10
 _ACTION_COST_D = 0.0025
-_FLOOR_H = 0.1
-_HEIGHT_COST_D = 0.001
 _CONTROL_TIMESTEP = 0.01
 
 def get_model_and_assets():
   """Returns a tuple containing the model XML string and a dict of assets."""
   return _make_model(), common.ASSETS
 
+def position_penalty(physics, joints_z):
+  _FLOOR_H = 0.1
+  _HEIGHT_COST_D = 0.001
+  pz = np.array(joints_z)
+  pz = np.fmin(pz - _FLOOR_H, np.zeros(9))
+  return _HEIGHT_COST_D * np.linalg.norm(pz)
+
 @SUITE.add('benchmarking', 'easy')
 def basic(time_limit=_DEFAULT_TIME_LIMIT, random=None):
   physics = Physics.from_xml_string(*get_model_and_assets())
   task = JacoReacher(random=random)
-  return control.Environment(physics, task, control_timestep=_CONTROL_TIMESTEP, time_limit=time_limit)
+  return control.Environment(physics, task, time_limit=time_limit)
 
 def _make_model():
   model_path = os.path.join(os.path.dirname( __file__ ), 'jaco_pos.xml')
@@ -89,15 +94,18 @@ class Physics(mujoco.Physics):
     self.named.data.mocap_pos[0] = position
 
   def ground_penalty(self):
-    pz = np.array([self.named.data.geom_xpos['jaco_joint_1', 'z'],
-     self.named.data.geom_xpos['jaco_joint_2', 'z'],
-     self.named.data.geom_xpos['jaco_joint_3', 'z'],
-     self.named.data.geom_xpos['jaco_joint_4', 'z'],
-     self.named.data.geom_xpos['jaco_joint_5', 'z'],
-     self.named.data.geom_xpos['jaco_joint_6', 'z'],
-    ]) - _FLOOR_H
-    pz = np.fmin(pz - _FLOOR_H, np.zeros(6))
-    return _HEIGHT_COST_D * np.linalg.norm(pz)
+    joints_z = [
+      self.named.data.geom_xpos['jaco_joint_1', 'z'],
+      self.named.data.geom_xpos['jaco_joint_2', 'z'],
+      self.named.data.geom_xpos['jaco_joint_3', 'z'],
+      self.named.data.geom_xpos['jaco_joint_4', 'z'],
+      self.named.data.geom_xpos['jaco_joint_5', 'z'],
+      self.named.data.geom_xpos['jaco_joint_6', 'z'],
+      self.named.data.geom_xpos['jaco_link_fingertip_1', 'z'],
+      self.named.data.geom_xpos['jaco_link_fingertip_2', 'z'],
+      self.named.data.geom_xpos['jaco_link_fingertip_3', 'z'],
+    ]
+    return position_penalty(self, joints_z)
 
 class JacoReacher(base.Task):
 
@@ -146,6 +154,6 @@ class JacoReacher(base.Task):
     """Returns a sparse or a smooth reward, as specified in the constructor."""
     reward = -physics.finger_to_target_distance()
     reward -= physics.action_cost
-    # reward -= physics.ground_penalty()
+    reward -= physics.ground_penalty()
     reward += physics.target_height()
     return reward

@@ -85,7 +85,7 @@
 		<light castshadow="true" directional="true" cutoff="60" exponent="1" diffuse="1 1 1" specular=".1 .1 .1" pos="1 1 1.5" dir="-1 -1 -1.3"/>
         <geom name="ground" class="ground" pos="0 0 0" size="5 5 1"/>
 
-        <body name="jaco_link_base" childclass="vizNcoll" pos="0 0 0.08">
+        <body name="jaco_link_base" childclass="vizNcoll" pos="0 0 0">
             <inertial pos="-3.14012e-008 0.000451919 0.0770704" quat="1 -0.000920048 6.51183e-006 5.62643e-005" mass="0.787504" diaginertia="0.00187445 0.00186316 0.000676952" />
             <geom name="jaco_link_base" contype="0" conaffinity="0" mesh="jaco_link_base"/>
 			<!-- <geom type="capsule" pos="0 0 -0.125" size=".045 0.125"/> -->

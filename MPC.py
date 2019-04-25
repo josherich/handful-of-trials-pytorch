@@ -134,6 +134,7 @@ class MPC(Controller):
         self.plan_hor = get_required_argument(params.opt_cfg, "plan_hor", "Must provide planning horizon.")
         self.obs_cost_fn = get_required_argument(params.opt_cfg, "obs_cost_fn", "Must provide cost on observations.")
         self.ac_cost_fn = get_required_argument(params.opt_cfg, "ac_cost_fn", "Must provide cost on actions.")
+        self.pose_cost_fn = params.opt_cfg.get("pose_cost_fn", None)
 
         self.save_all_models = params.log_cfg.get("save_all_models", False)
         self.log_traj_preds = params.log_cfg.get("log_traj_preds", False)
@@ -353,6 +354,9 @@ class MPC(Controller):
             next_obs = self._predict_next_obs(cur_obs, cur_acs)
 
             cost = self.obs_cost_fn(next_obs) + self.ac_cost_fn(cur_acs)
+
+            if self.pose_cost_fn:
+                cost += self.pose_cost_fn(next_obs)
 
             cost = cost.view(-1, self.npart)
 

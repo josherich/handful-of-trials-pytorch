@@ -14,6 +14,9 @@ from config.utils import swish, get_affine_params
 from DotmapUtils import get_required_argument
 
 from jaco.jacoEnv import env
+from jaco.jaco import position_penalty
+from dm_control.mujoco.wrapper import mjbindings
+mjlib = mjbindings.mjlib
 
 TORCH_DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 _ACTION_COST_D = 0.0025
@@ -149,6 +152,29 @@ class JacoConfigModule:
         cost -= obs[:,23]
 
         return torch.from_numpy(cost).float().to(TORCH_DEVICE)
+
+    def pose_cost_fn(self, obs):
+        pz_sum = 0
+        physics = self.ENV.dmcenv.physics.copy(share_model=True)
+        dtype = physics.data.qpos.dtype
+        for o in obs:
+            update_nv = np.array(o[0:9], dtype=dtype)
+            mjlib.mj_integratePos(physics.model.ptr, physics.data.qpos, update_nv, 1)
+            mjlib.mj_fwdPosition(physics.model.ptr, physics.data.ptr)
+
+            joints_z = [
+             physics.named.data.geom_xpos['jaco_joint_1', 'z'],
+             physics.named.data.geom_xpos['jaco_joint_2', 'z'],
+             physics.named.data.geom_xpos['jaco_joint_3', 'z'],
+             physics.named.data.geom_xpos['jaco_joint_4', 'z'],
+             physics.named.data.geom_xpos['jaco_joint_5', 'z'],
+             physics.named.data.geom_xpos['jaco_joint_6', 'z'],
+             physics.named.data.geom_xpos['jaco_link_fingertip_1', 'z'],
+             physics.named.data.geom_xpos['jaco_link_fingertip_2', 'z'],
+             physics.named.data.geom_xpos['jaco_link_fingertip_3', 'z'],
+            ]
+            pz_sum += position_penalty(physics, joints_z)
+        return pz_sum
 
     @staticmethod
     def ac_cost_fn(acs):
