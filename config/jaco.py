@@ -158,9 +158,17 @@ class JacoConfigModule:
         physics = self.ENV.dmcenv.physics.copy(share_model=True)
         dtype = physics.data.qpos.dtype
         for o in obs:
-            update_nv = np.array(o.cpu()[0:9], dtype=dtype)
-            mjlib.mj_integratePos(physics.model.ptr, physics.data.qpos, update_nv, 1)
-            mjlib.mj_fwdPosition(physics.model.ptr, physics.data.ptr)
+            physics.named.data.qpos[[
+                'jaco_joint_1', 
+                'jaco_joint_2', 
+                'jaco_joint_3', 
+                'jaco_joint_4', 
+                'jaco_joint_5', 
+                'jaco_joint_6', 
+                'jaco_joint_finger_1', 
+                'jaco_joint_finger_2', 
+                'jaco_joint_finger_3',]] = o.cpu()[0:9]
+            mjlib.mj_kinematics(physics.model.ptr, physics.data.ptr)
 
             joints_z = [
              physics.named.data.geom_xpos['jaco_joint_1', 'z'],
