@@ -158,7 +158,7 @@ class JacoConfigModule:
         physics = self.ENV.dmcenv.physics.copy(share_model=True)
         dtype = physics.data.qpos.dtype
         for o in obs:
-            update_nv = np.array(o[0:9], dtype=dtype)
+            update_nv = np.array(o.cpu()[0:9], dtype=dtype)
             mjlib.mj_integratePos(physics.model.ptr, physics.data.qpos, update_nv, 1)
             mjlib.mj_fwdPosition(physics.model.ptr, physics.data.ptr)
 
