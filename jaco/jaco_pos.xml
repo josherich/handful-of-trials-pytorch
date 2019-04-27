@@ -153,10 +153,10 @@
 
         <!-- <geom name="target" pos="0 0 .01" material="target" type="sphere" size=".05"/> -->
 
-        <body name="target" pos="0 0 0">
+        <body name="target" pos="0 0 0.1">
           <joint name="target_x" type="slide" axis="1 0 0"/>
-          <joint name="target_z" type="slide" axis="0 0 1"/>
           <joint name="target_y" type="slide" axis="0 1 0"/>
+          <!-- <joint name="target_z" type="slide" axis="0 0 1"/> -->
           <geom  name="target" type="sphere" material="target" size=".04" />
           <site  name="target" type="sphere"/>
         </body>

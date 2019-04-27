@@ -143,7 +143,7 @@ class JacoReacher(base.Task):
     anglez = self.random.uniform(0, np.pi)
     radius = self.random.uniform(.30, .60)
 
-    physics.named.data.qpos[['target_x', 'target_y', 'target_z']] = radius * np.cos(angle), radius * np.sin(angle), 0.04
+    physics.named.data.qpos[['target_x', 'target_y']] = radius * np.cos(angle), radius * np.sin(angle)  
     physics.named.data.qpos[['jaco_joint_1', 'jaco_joint_2']] = [np.pi*1.5, -np.pi/4]
 
   def get_observation(self, physics):
