@@ -114,7 +114,7 @@ class Physics(mujoco.Physics):
     return position_penalty(self, joints_z)
 
   def pose_penalty(self):
-    ef_angle = self.finger_to_target()
+    ef_angle = self.named.data.site_xmat['palm'].reshape(3,3).dot([0,0,-1])
     return ef_pose_penalty(ef_angle)
 
 class JacoReacher(base.Task):
@@ -153,6 +153,7 @@ class JacoReacher(base.Task):
     obs['to_target'] = physics.finger_to_target()
     obs['velocity'] = physics.velocity()[0:9]
     obs['target'] = physics.target_pos()
+    obs['ef_rot'] = physics.named.data.site_xmat['palm'].reshape(3,3).dot([0,0,-1])
     return obs
 
   def before_step(self, action, physics):

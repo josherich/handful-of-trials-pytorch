@@ -106,7 +106,7 @@ class JacoConfigModule:
     NTRAIN_ITERS = 100
     NROLLOUTS_PER_ITER = 1
     PLAN_HOR = 25
-    MODEL_IN, MODEL_OUT = 33, 24
+    MODEL_IN, MODEL_OUT = 36, 27
     GP_NINDUCING_POINTS = 200
 
     def __init__(self):
@@ -147,13 +147,14 @@ class JacoConfigModule:
 
         obs = obs.detach().cpu().numpy()
         cost = np.sum(np.square(obs[:,9:12]), axis=1)
-        cost -= obs[:,23]
 
         return torch.from_numpy(cost).float().to(TORCH_DEVICE)
 
     def pose_cost_fn(self, obs):
         COST_D = 0.1
-        ef_angle = obs[:,9:12]
+
+        obs = obs.detach().cpu().numpy()
+        ef_angle = obs[:,24:27]
         cost = COST_D * np.arccos(np.dot(ef_angle, [0,0,-1]) / np.linalg.norm(ef_angle, axis=1))
         return torch.from_numpy(cost).float().to(TORCH_DEVICE)
 
