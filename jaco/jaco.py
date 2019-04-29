@@ -21,7 +21,6 @@ from __future__ import print_function
 import collections
 import os
 import os.path
-
 # Internal dependencies.
 
 from dm_control import mujoco
@@ -43,10 +42,24 @@ SUITE = containers.TaggedTasks()
 _DEFAULT_TIME_LIMIT = 10
 _ACTION_COST_D = 0.0025
 _CONTROL_TIMESTEP = 0.01
+_HOME_POSE = [275.35, 167.43, 57.49, 240.86, 82.70, 75.72, 0, 0, 0]
 
 def get_model_and_assets():
   """Returns a tuple containing the model XML string and a dict of assets."""
   return _make_model(), common.ASSETS
+
+def real_to_sim(angles):
+  zero_offset = np.array([-180, 270, 90, 180, 180, -90, 0, 0, 0])
+
+  # correct for the different physical directions of a +theta
+  # movement between mujoco
+  directions = np.array([-1, 1, -1, -1, -1, -1, 1, 1, 1])
+
+  # correct for the degrees -> radians shift going from arm
+  # to mujoco
+  scales = np.array([np.pi / 180] * 6 + [0.78 / 6800] * 3)
+
+  return (angles - zero_offset) * directions * scales
 
 def position_penalty(physics, joints_z):
   _FLOOR_H = 0.1
@@ -144,7 +157,16 @@ class JacoReacher(base.Task):
     radius = self.random.uniform(.30, .60)
 
     physics.named.data.qpos[['target_x', 'target_y']] = radius * np.cos(angle), radius * np.sin(angle)  
-    physics.named.data.qpos[['jaco_joint_1', 'jaco_joint_2']] = [np.pi*1.5, -np.pi/4]
+    physics.named.data.qpos[[
+      'jaco_joint_1', 
+      'jaco_joint_2',
+      'jaco_joint_3',
+      'jaco_joint_4',
+      'jaco_joint_5',
+      'jaco_joint_6',
+      'jaco_joint_finger_1',
+      'jaco_joint_finger_2',
+      'jaco_joint_finger_3']] = real_to_sim(_HOME_POSE)
 
   def get_observation(self, physics):
     """Returns an observation of the (bounded) physics state."""

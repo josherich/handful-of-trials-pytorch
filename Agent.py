@@ -65,6 +65,7 @@ class Agent:
                 A.append(solution)
 
             times.append(time.time() - start)
+            obs, reward, done, info = self.env.step(A[t] + O[t][0:9])
 
             obs, reward, done, info = self.env.step(A[t])
 
