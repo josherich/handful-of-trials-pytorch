@@ -77,7 +77,7 @@ def ef_pose_penalty(ef_angle):
 def basic(time_limit=_DEFAULT_TIME_LIMIT, random=None):
   physics = Physics.from_xml_string(*get_model_and_assets())
   task = JacoReacher(random=random)
-  return control.Environment(physics, task, time_limit=time_limit)
+  return control.Environment(physics, task, control_timestep=_CONTROL_TIMESTEP, time_limit=time_limit)
 
 def _make_model():
   model_path = os.path.join(os.path.dirname( __file__ ), 'jaco_pos.xml')
