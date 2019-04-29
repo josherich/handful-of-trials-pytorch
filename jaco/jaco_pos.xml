@@ -93,37 +93,37 @@
 
 			<body name="jaco_link_1" childclass="vizNcoll" pos="0 0 0.1535" quat="0 0 1 0">
                 <inertial pos="-1.14317e-006 0.0102141 -0.0637045" quat="0.702792 0.0778988 -0.0778994 0.702813" mass="0.613151" diaginertia="0.00149348 0.00144012 0.000401632" />
-                <joint name="jaco_joint_1" axis="0 0 -1" damping="30" limited="true" range="-6.28319 6.28319"/>
+                <joint name="jaco_joint_1" axis="0 0 -1" damping="30" limited="true" range="-171.39133255 171.39133255"/>
                 <geom name="jaco_joint_1" contype="1" conaffinity="1" mesh="jaco_link_1"/>
 
 
 				<body name="jaco_link_2" pos="0 0 -0.1185" quat="0 0 0.707107 0.707107">
                     <inertial pos="0.206657 -1.55187e-007 -0.030675" quat="8.97411e-006 0.707331 5.06696e-006 0.706883" mass="1.85031" diaginertia="0.0402753 0.0398125 0.00121953" />
-                    <joint name="jaco_joint_2" axis="0 0 1" damping="30" limited="true" range="-2.35 2.35"/>
+                    <joint name="jaco_joint_2" axis="0 0 1" damping="30" limited="true" range="-3.89208423 0.75049158"/>
                     <geom name="jaco_joint_2" contype="1" conaffinity="1" mesh="jaco_link_2"/>
 
 
 					<body name="jaco_link_3" pos="0.41 0 0" quat="0 0.707107 0.707107 0">
                         <inertial pos="0.0847979 -1.18469e-007 -0.020283" quat="2.33799e-005 0.694869 1.96996e-005 0.719136" mass="0.70372" diaginertia="0.00386732 0.00373181 0.000358773" />
-                        <joint name="jaco_joint_3" axis="0 0 -1" damping="30" limited="true" range="-2.86 2.86"/>
+                        <joint name="jaco_joint_3" axis="0 0 -1" damping="30" limited="true" range="-4.38077642 1.23918377"/>
                         <geom name="jaco_joint_3" contype="1" conaffinity="1" mesh="jaco_link_3"/>
 
 
 						<body name="jaco_link_4" pos="0.207 0 -0.01125" quat="0 0.707107 0 -0.707107">
                             <inertial pos="0.00914824 4.53141e-008 -0.0370941" quat="0.971237 -1.92989e-005 -0.238115 3.23646e-005" mass="0.227408" diaginertia="0.000176463 0.00017225 0.000108303" />
-                            <joint name="jaco_joint_4" axis="0 0 -1" damping="30" limited="true" range="-6.28319 6.28319"/>
+                            <joint name="jaco_joint_4" axis="0 0 -1" damping="30" limited="true" range="-171.39133255 171.39133255"/>
                             <geom name="jaco_joint_4" contype="1" conaffinity="1" mesh="jaco_link_4"/>
 
 
 							<body name="jaco_link_5" pos="0.0343 0 -0.06588" quat="0.887011 0 -0.461749 0">
                                 <inertial pos="0.00914824 4.53141e-008 -0.0370941" quat="0.971237 -1.92989e-005 -0.238115 3.23646e-005" mass="0.227408" diaginertia="0.000176463 0.00017225 0.000108303" />
-                                <joint name="jaco_joint_5" axis="0 0 -1" damping="30" limited="true" range="-6.28319 6.28319"/>
+                                <joint name="jaco_joint_5" axis="0 0 -1" damping="30" limited="true" range="-171.39133255 171.39133255"/>
                                 <geom name="jaco_joint_5" contype="1" conaffinity="1" mesh="jaco_link_5"/>
 
 
 								<body name="jaco_link_6" pos="0.0343 0 -0.06588" quat="0.627211 -0.326506 -0.326506 0.627211">
                                     <inertial pos="0.0036132 -6.2241e-005 -0.0583749" quat="0.669114 -0.237618 -0.23799 0.66271" mass="0.58074" diaginertia="0.000817146 0.000671192 0.000606807" />
-                                    <joint name="jaco_joint_6" axis="0 0 -1" damping="30" limited="true" range="-6.28319 6.28319"/>
+                                    <joint name="jaco_joint_6" axis="0 0 -1" damping="30" limited="true" range="-171.39133255 171.39133255"/>
                                     <geom name="jaco_joint_6" contype="1" conaffinity="1" mesh="jaco_link_hand" rgba=".13 .13 .13 1"/>
 
                                     <site name="palm" pos="0.0 0.0 -0.15" type="sphere" size="0.01"/>
@@ -167,15 +167,15 @@
 
 	<actuator>
 		<!--  ================= Torque actuators (Weren't present in the URDF. Added seperately)================= /-->
-		<position joint='jaco_joint_1' name='Ajaco_joint_1' gear="10" ctrllimited="true" ctrlrange="-3.0 3.0"/>
-		<position joint='jaco_joint_2' name='Ajaco_joint_2' gear="10" ctrllimited="true" ctrlrange="-3.0 3.0"/>
-		<position joint='jaco_joint_3' name='Ajaco_joint_3' gear="10" ctrllimited="true" ctrlrange="-3.0 3.0"/>
-		<position joint='jaco_joint_4' name='Ajaco_joint_4' gear="10" ctrllimited="true" ctrlrange="-3.0 3.0"/>
-		<position joint='jaco_joint_5' name='Ajaco_joint_5' gear="10" ctrllimited="true" ctrlrange="-3.0 3.0"/>
-		<position joint='jaco_joint_6' name='Ajaco_joint_6' gear="10" ctrllimited="true" ctrlrange="-3.0 3.0"/>
-		<position joint='jaco_joint_finger_1' name='Ajaco_joint_finger_1' gear='10' ctrllimited="true" ctrlrange="-3.0 3.0"/>
-		<position joint='jaco_joint_finger_2' name='Ajaco_joint_finger_2' gear='10' ctrllimited="true" ctrlrange="-3.0 3.0"/>
-		<position joint='jaco_joint_finger_3' name='Ajaco_joint_finger_3' gear='10' ctrllimited="true" ctrlrange="-3.0 3.0"/>
+		<position joint='jaco_joint_1' name='Ajaco_joint_1' gear="1" ctrllimited="true" ctrlrange="-30.0 30.0"/>
+		<position joint='jaco_joint_2' name='Ajaco_joint_2' gear="1" ctrllimited="true" ctrlrange="-30.0 30.0"/>
+		<position joint='jaco_joint_3' name='Ajaco_joint_3' gear="1" ctrllimited="true" ctrlrange="-30.0 30.0"/>
+		<position joint='jaco_joint_4' name='Ajaco_joint_4' gear="1" ctrllimited="true" ctrlrange="-30.0 30.0"/>
+		<position joint='jaco_joint_5' name='Ajaco_joint_5' gear="1" ctrllimited="true" ctrlrange="-30.0 30.0"/>
+		<position joint='jaco_joint_6' name='Ajaco_joint_6' gear="1" ctrllimited="true" ctrlrange="-30.0 30.0"/>
+		<position joint='jaco_joint_finger_1' name='Ajaco_joint_finger_1' gear='1' ctrllimited="true" ctrlrange="-30.0 30.0"/>
+		<position joint='jaco_joint_finger_2' name='Ajaco_joint_finger_2' gear='1' ctrllimited="true" ctrlrange="-30.0 30.0"/>
+		<position joint='jaco_joint_finger_3' name='Ajaco_joint_finger_3' gear='1' ctrllimited="true" ctrlrange="-30.0 30.0"/>
 
 	</actuator>
 

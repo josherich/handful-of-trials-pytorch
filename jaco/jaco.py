@@ -41,7 +41,7 @@ SUITE = containers.TaggedTasks()
 
 _DEFAULT_TIME_LIMIT = 10
 _ACTION_COST_D = 0.0025
-_CONTROL_TIMESTEP = 0.01
+_CONTROL_TIMESTEP = 0.1
 _HOME_POSE = [275.35, 167.43, 57.49, 240.86, 82.70, 75.72, 0, 0, 0]
 
 def get_model_and_assets():
