@@ -119,6 +119,7 @@ class MPC(Controller):
         self.update_fns = params.get("update_fns", [])
         self.per = params.get("per", 1)
 
+        self.actuator_mode = "position"
         self.model_init_cig = params.prop_cfg.get("model_init_cfg", {})
         self.model_train_cfg = params.prop_cfg.get("model_train_cfg", {})
         self.prop_mode = get_required_argument(params.prop_cfg, "mode", "Must provide propagation method.")
@@ -281,7 +282,12 @@ class MPC(Controller):
         Returns: An action (and possibly the predicted cost)
         """
         if not self.has_been_trained:
-            return np.random.uniform(self.ac_lb, self.ac_ub, self.ac_lb.shape)
+            if self.actuator_mode == "motor":
+                return np.random.uniform(self.ac_lb, self.ac_ub, self.ac_lb.shape)
+            elif self.actuator_mode == "position":
+                _LIMIT = 5
+                return np.random.uniform(np.repeat(_LIMIT, self.ac_lb.shape), np.repeat(-_LIMIT, self.ac_lb.shape), self.ac_lb.shape)
+
         if self.ac_buf.shape[0] > 0:
             action, self.ac_buf = self.ac_buf[0], self.ac_buf[1:]
             return action
