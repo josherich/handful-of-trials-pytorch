@@ -41,7 +41,13 @@ SUITE = containers.TaggedTasks()
 
 _DEFAULT_TIME_LIMIT = 10
 _ACTION_COST_D = 0.0025
-_CONTROL_TIMESTEP = 0.1
+
+# default 0.002
+_CONTROL_TIMESTEP = 0.01
+
+# default 1, 500/s
+_N_SUB_STEPS = 50
+
 _HOME_POSE = [275.35, 167.43, 57.49, 240.86, 82.70, 75.72, 0, 0, 0]
 
 def get_model_and_assets():
@@ -77,7 +83,9 @@ def ef_pose_penalty(ef_angle):
 def basic(time_limit=_DEFAULT_TIME_LIMIT, random=None):
   physics = Physics.from_xml_string(*get_model_and_assets())
   task = JacoReacher(random=random)
-  return control.Environment(physics, task, control_timestep=_CONTROL_TIMESTEP, time_limit=time_limit)
+  # return control.Environment(physics, task, control_timestep=_CONTROL_TIMESTEP, time_limit=time_limit)
+  return control.Environment(physics, task, n_sub_steps=_N_SUB_STEPS, time_limit=time_limit)
+  # return control.Environment(physics, task, time_limit=time_limit)
 
 def _make_model():
   model_path = os.path.join(os.path.dirname( __file__ ), 'jaco_pos.xml')
