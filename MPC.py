@@ -112,14 +112,20 @@ class MPC(Controller):
                         Warning: Can be very memory-intensive
         """
         super().__init__(params)
+        self.actuator_mode = "position_delta"
         self.dO, self.dU = params.env.observation_space.shape[0], params.env.action_space.shape[0]
         self.ac_ub, self.ac_lb = params.env.action_space.high, params.env.action_space.low
         self.ac_ub = np.minimum(self.ac_ub, params.get("ac_ub", self.ac_ub))
         self.ac_lb = np.maximum(self.ac_lb, params.get("ac_lb", self.ac_lb))
+
+        if self.actuator_mode == "position_delta":
+            _LIMIT = 1
+            self.ac_lb = np.repeat(-_LIMIT, self.ac_lb.shape)
+            self.ac_ub = np.repeat(_LIMIT, self.ac_lb.shape)
+
         self.update_fns = params.get("update_fns", [])
         self.per = params.get("per", 1)
 
-        self.actuator_mode = "position"
         self.model_init_cig = params.prop_cfg.get("model_init_cfg", {})
         self.model_train_cfg = params.prop_cfg.get("model_train_cfg", {})
         self.prop_mode = get_required_argument(params.prop_cfg, "mode", "Must provide propagation method.")
@@ -281,12 +287,9 @@ class MPC(Controller):
 
         Returns: An action (and possibly the predicted cost)
         """
+        _LIMIT = 1
         if not self.has_been_trained:
-            if self.actuator_mode == "motor":
-                return np.random.uniform(self.ac_lb, self.ac_ub, self.ac_lb.shape)
-            elif self.actuator_mode == "position":
-                _LIMIT = 5
-                return np.random.uniform(np.repeat(_LIMIT, self.ac_lb.shape), np.repeat(-_LIMIT, self.ac_lb.shape), self.ac_lb.shape)
+            return np.random.uniform(self.ac_lb, self.ac_ub, self.ac_lb.shape)
 
         if self.ac_buf.shape[0] > 0:
             action, self.ac_buf = self.ac_buf[0], self.ac_buf[1:]
