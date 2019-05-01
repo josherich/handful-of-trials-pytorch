@@ -182,6 +182,7 @@ class JacoReacher(base.Task):
     obs['position'] = physics.position()[0:9]
     obs['to_target'] = physics.finger_to_target()
     obs['velocity'] = physics.velocity()[0:9]
+    # obs['velocity'] = np.zeros(9)
     obs['target'] = physics.target_pos()
     obs['ef_rot'] = physics.named.data.site_xmat['palm'].reshape(3,3).dot([0,0,-1])
     return obs
