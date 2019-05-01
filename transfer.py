@@ -7,6 +7,8 @@ import argparse
 import pprint
 import time
 import ipdb
+import collections
+import numpy as np
 
 from dotmap import DotMap
 from config import create_config
@@ -16,10 +18,12 @@ from jaco.jaco_gym import env
 from MPC import MPC
 from gym.wrappers.monitoring.video_recorder import VideoRecorder
 
-# import kinova
-# sys.path.append('../kinova-raw')
-# sys.path.append('../jaco-simulation')
+import sys
+import math
+sys.path.append('../kinova-raw')
+sys.path.append('../jaco-simulation')
 
+import kinova
 import cv2
 cv2.namedWindow('image', cv2.WINDOW_NORMAL)
 cv2.resizeWindow('image', 800, 600)
@@ -34,21 +38,27 @@ def move_mujoco_to_real(env):
     angles = get_jaco_angles()
     env.dmcenv.physics.named.data.qpos[:9] = real_to_sim(angles)
 
+zero_offset = np.array([-180, 270, 90, 180, 180, -90, 0, 0, 0])
+directions = np.array([-1, 1, -1, -1, -1, -1, 1, 1, 1])
+scales = np.array([math.pi / 180] * 6 + [0.78 / 6800] * 3)
+
 def real_to_sim(angles):
     # where the robot has to be (in kinova coordinates)
     # to be at zero in mujoco
-    zero_offset = np.array([-180, 270, 90, 180, 180, -90, 0, 0, 0])
+    
 
     # correct for the different physical directions of a +theta
     # movement between mujoco
-    directions = np.array([-1, 1, -1, -1, -1, -1, 1, 1, 1])
+    
 
     # correct for the degrees -> radians shift going from arm
     # to mujoco
-    scales = np.array([math.pi / 180] * 6 + [0.78 / 6800] * 3)
-
     return (angles - zero_offset) * directions * scales
 
+def sim_to_real(angles):
+      return (angles / (directions * scales)) + zero_offset
+
+kinova.start()
 
 def agent_sample(env, horizon, policy, record_fname):
     solution = None
@@ -57,7 +67,12 @@ def agent_sample(env, horizon, policy, record_fname):
 
     times, rewards = [], []
     O, A, reward_sum, done = [env.reset()], [], 0, False
-
+    real_c = kinova.get_cartesian_position()
+    sim_c = env.dmcenv.physics.named.data.site_xpos['palm']
+    print("Real pos:", real_c)
+    print("sim pos:", sim_c)
+    return
+    # move_mujoco_to_real(env)
     policy.reset()
 
     for t in range(horizon):
@@ -65,27 +80,35 @@ def agent_sample(env, horizon, policy, record_fname):
             recorder.capture_frame()
 
         start = time.time()
-
+        # print(O)
+        # print(t)
         solution = policy.act(O[t], t)
         A.append(solution)
 
         times.append(time.time() - start)
 
         # === Do action on real jaco ===
+        kinova.move_angular_delta(A[t][0:6]/directions[0:6])
         # move_jaco_real(A[t] + O[t][0:9])
 
-        print("ac: ", A[t] + O[t][0:9])
+        # print("ac: ", A[t] + O[t][0:9])
         obs, reward, done, info = env.step(A[t] + O[t][0:9])
-        print("obs: ", obs)
-        print("reward: ", reward)
+        # print("obs: ", obs)
+        # print("reward: ", reward)
 
         # === Get obs from real jaco ===
+        real_c = kinova.get_cartesian_position()
+        sim_c = env.dmcenv.physics.named.data.site_xpos['palm']
+        print("Real pos:", real_c)
+        print("sim pos:", sim_c)
         # angles = get_jaco_angles()
         # obs_angles = real_to_sim(angles)
+        # print("real_obs", obs_angles)
         # O[t][0:9] = obs_angles
+        # obs[0:9] = obs_angles
 
         # === sync ===
-        # move_mojuco_to_real(env)
+        # move_mujoco_to_real(env)
 
         screen = env.render(mode='rgb_array')
         cv2.imshow('image', cv2.cvtColor(screen, cv2.COLOR_BGR2RGB))
@@ -94,13 +117,13 @@ def agent_sample(env, horizon, policy, record_fname):
             break
 
         O.append(obs)
-        reward_sum += reward
-        rewards.append(reward)
-        if done:
-            break
+        # reward_sum += reward
+        # rewards.append(reward)
+        # if done:
+        #     break
 
         # === stop ===
-        ipdb.set_trace()
+        # ipdb.set_trace()
 
     if video_record:
         recorder.capture_frame()
