@@ -164,9 +164,11 @@ class JacoReacher(base.Task):
     anglez = self.random.uniform(0, np.pi)
     radius = self.random.uniform(.30, .60)
 
-    physics.named.data.qpos[['target_x', 'target_y']] = radius * np.cos(angle), radius * np.sin(angle)  
+    physics.named.data.qpos[['target_x', 'target_y']] = radius * np.cos(angle), radius * np.sin(angle)
+
+    home_noise = np.concatenate((self.random.uniform(-1.0, 1.0, 6), [0,0,0]))
     physics.named.data.qpos[[
-      'jaco_joint_1', 
+      'jaco_joint_1',
       'jaco_joint_2',
       'jaco_joint_3',
       'jaco_joint_4',
@@ -174,17 +176,16 @@ class JacoReacher(base.Task):
       'jaco_joint_6',
       'jaco_joint_finger_1',
       'jaco_joint_finger_2',
-      'jaco_joint_finger_3']] = real_to_sim(_HOME_POSE)
+      'jaco_joint_finger_3']] = real_to_sim(_HOME_POSE+home_noise)
 
   def get_observation(self, physics):
     """Returns an observation of the (bounded) physics state."""
     obs = collections.OrderedDict()
     obs['position'] = physics.position()[0:9]
     obs['to_target'] = physics.finger_to_target()
-    obs['velocity'] = physics.velocity()[0:9]
-    # obs['velocity'] = np.zeros(9)
     obs['target'] = physics.target_pos()
-    obs['ef_rot'] = physics.named.data.site_xmat['palm'].reshape(3,3).dot([0,0,-1])
+    # obs['velocity'] = physics.velocity()[0:9]
+    # obs['ef_rot'] = physics.named.data.site_xmat['palm'].reshape(3,3).dot([0,0,-1])
     return obs
 
   def before_step(self, action, physics):

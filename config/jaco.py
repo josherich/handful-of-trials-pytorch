@@ -106,7 +106,15 @@ class JacoConfigModule:
     NTRAIN_ITERS = 100
     NROLLOUTS_PER_ITER = 1
     PLAN_HOR = 25
-    MODEL_IN, MODEL_OUT = 36, 27
+    # position:to_target:target
+    MODEL_IN, MODEL_OUT = 24, 15
+
+    # position:to_target:velocity:target:ef_rot
+    # MODEL_IN, MODEL_OUT = 36, 27
+
+    # position:to_target:target:ef_rot
+    # MODEL_IN, MODEL_OUT = 27, 18
+
     GP_NINDUCING_POINTS = 200
 
     def __init__(self):
