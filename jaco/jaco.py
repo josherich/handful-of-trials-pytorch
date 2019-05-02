@@ -49,6 +49,8 @@ _CONTROL_TIMESTEP = 0.01
 _N_SUB_STEPS = 50
 
 _HOME_POSE = [275.35, 167.43, 57.49, 240.86, 82.70, 75.72, 0, 0, 0]
+_JOINT_H = [10000, 313, 341, 10000, 10000, 10000, 0, 0, 0]
+_JOINT_L = [-10000, 47, 19, -10000, -10000, -10000, 0, 0, 0]
 
 def get_model_and_assets():
   """Returns a tuple containing the model XML string and a dict of assets."""
@@ -177,6 +179,9 @@ class JacoReacher(base.Task):
       'jaco_joint_finger_1',
       'jaco_joint_finger_2',
       'jaco_joint_finger_3']] = real_to_sim(_HOME_POSE+home_noise)
+    # print(real_to_sim(_JOINT_L))
+    # print(real_to_sim(_JOINT_H))
+    # print(real_to_sim(_HOME_POSE))
 
   def get_observation(self, physics):
     """Returns an observation of the (bounded) physics state."""
@@ -196,6 +201,6 @@ class JacoReacher(base.Task):
     """Returns a sparse or a smooth reward, as specified in the constructor."""
     reward = -physics.finger_to_target_distance()
     reward -= physics.action_cost
-    reward -= physics.pose_penalty()
-    reward += physics.target_height()
+    # reward -= physics.pose_penalty()
+    # reward += physics.target_height()
     return reward
