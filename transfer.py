@@ -12,7 +12,7 @@ from dotmap import DotMap
 from config import create_config
 from DotmapUtils import get_required_argument
 
-from jaco.jacoEnv import env
+from jaco.jaco_gym import env
 from MPC import MPC
 from gym.wrappers.monitoring.video_recorder import VideoRecorder
 

@@ -10,6 +10,7 @@ from dotmap import DotMap
 
 from MBExperiment import MBExperiment
 from MPC import MPC
+from Physics import Physics
 from config import create_config
 import env # We run this so that the env is registered
 
@@ -30,7 +31,7 @@ def set_global_seeds(seed):
     tf.set_random_seed(seed)
 
 
-def main(env, ctrl_type, ctrl_args, overrides, logdir):
+def main(env, ctrl_type, ctrl_args, overrides, logdir, physics):
     set_global_seeds(0)
 
     ctrl_args = DotMap(**{key: val for (key, val) in ctrl_args})
@@ -38,8 +39,12 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir):
     cfg.pprint()
 
     assert ctrl_type == 'MPC'
+    
+    if physics:
+        cfg.exp_cfg.exp_cfg.policy = Physics(cfg.ctrl_cfg)
+    else:
+        cfg.exp_cfg.exp_cfg.policy = MPC(cfg.ctrl_cfg)
 
-    cfg.exp_cfg.exp_cfg.policy = MPC(cfg.ctrl_cfg)
     exp = MBExperiment(cfg.exp_cfg)
 
     # os.makedirs(exp.logdir)
@@ -52,13 +57,15 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-env', type=str, required=True,
-                        help='Environment name: select from [cartpole, reacher, pusher, halfcheetah]')
+                        help='Environment name: select from [cartpole, reacher, pusher, halfcheetah, jaco, manipulator]')
     parser.add_argument('-ca', '--ctrl_arg', action='append', nargs=2, default=[],
                         help='Controller arguments, see https://github.com/kchua/handful-of-trials#controller-arguments')
     parser.add_argument('-o', '--override', action='append', nargs=2, default=[],
                         help='Override default parameters, see https://github.com/kchua/handful-of-trials#overrides')
+    parser.add_argument('-physics', action='store_true',
+                        help='use IK solver')
     parser.add_argument('-logdir', type=str, default='log',
                         help='Directory to which results will be logged (default: ./log)')
     args = parser.parse_args()
 
-    main(args.env, "MPC", args.ctrl_arg, args.override, args.logdir)
+    main(args.env, "MPC", args.ctrl_arg, args.override, args.logdir, args.physics)

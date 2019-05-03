@@ -83,13 +83,15 @@ class MBExperiment:
             traj_acs.append(samples[-1]["ac"])
             traj_rews.append(samples[-1]["rewards"])
 
+        if hasattr(self.policy, 'physics'):
+            return
+
         if self.ninit_rollouts > 0:
             self.policy.train(
                 [sample["obs"] for sample in samples],
                 [sample["ac"] for sample in samples],
                 [sample["rewards"] for sample in samples]
             )
-
         # Training loop
         for i in trange(self.ntrain_iters):
             print("####################################################################")
@@ -103,7 +105,7 @@ class MBExperiment:
             for j in range(max(self.neval, self.nrollouts_per_iter)):
                 samples.append(
                     self.agent.sample(
-                        self.task_hor, self.policy, record_fname=os.path.join(iter_dir, "rollout%d.mp4" % j), control=False
+                        self.task_hor, self.policy, record_fname=os.path.join(iter_dir, "rollout%d.mp4" % j)
                     )
                 )
             print("Rewards obtained:", [sample["reward_sum"] for sample in samples[:self.neval]])

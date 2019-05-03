@@ -126,27 +126,3 @@ class DmControlWrapper(core.Env):
         if self.viewer[mode] is None:
             self.viewer[mode] = DmControlViewer(self.pixels.shape[1], self.pixels.shape[0], self.render_mode_list[mode]['render_kwargs']['depth'])
         return self.viewer[mode]
-
-    def IKSolve(self, obs):
-        _TOL = 1e-14
-        _MAX_STEPS = 100
-        site_name = 'palm'
-        target_pos = self.dmcenv.physics.named.data.geom_xpos['target']
-        target_quat = self.dmcenv.physics.named.model.geom_quat['target']
-        print('target pos: ', target_pos)
-        joint_names = ['jaco_joint_1','jaco_joint_2','jaco_joint_3','jaco_joint_4','jaco_joint_5','jaco_joint_6']
-        result = ik.qpos_from_site_pose(
-            physics=self.dmcenv.physics,
-            site_name=site_name,
-            target_pos=target_pos,
-            joint_names=joint_names,
-            tol=_TOL,
-            max_steps=_MAX_STEPS,
-            inplace=False)
-        result = result.qpos
-        print('sol: ', result)
-        print('obs: ', obs)
-        # print(self.dmcenv.physics.named.model.geom_pos)
-        # print(self.dmcenv.physics.named.model.jnt_axis)
-        # print(self.dmcenv.physics.named.model.geom_quat)
-        return result

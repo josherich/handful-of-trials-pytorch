@@ -144,6 +144,7 @@ class JacoReacher(base.Task):
 
   def __init__(self, random=None):
     super(JacoReacher, self).__init__(random=random)
+    self.action_mode = 'delta'
 
   def initialize_episode(self, physics):
     """Sets the state of the environment at the start of each episode.
@@ -164,9 +165,10 @@ class JacoReacher(base.Task):
     # randomize target position
     angle = self.random.uniform(np.pi, 2 * np.pi)
     anglez = self.random.uniform(0, np.pi)
-    radius = self.random.uniform(.30, .60)
+    radius = self.random.uniform(.35, .60)
 
     physics.named.data.qpos[['target_x', 'target_y']] = radius * np.cos(angle), radius * np.sin(angle)
+    physics.named.model.body_pos['target', 'z'] = radius * np.sin(anglez)
 
     home_noise = np.concatenate((self.random.uniform(-1.0, 1.0, 6), [0,0,0]))
     physics.named.data.qpos[[
@@ -201,6 +203,6 @@ class JacoReacher(base.Task):
     """Returns a sparse or a smooth reward, as specified in the constructor."""
     reward = -physics.finger_to_target_distance()
     reward -= physics.action_cost
-    # reward -= physics.pose_penalty()
+    reward -= physics.pose_penalty()
     # reward += physics.target_height()
     return reward

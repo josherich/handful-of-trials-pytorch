@@ -8,6 +8,13 @@ import numpy as np
 from dotmap import DotMap
 from gym.wrappers.monitoring.video_recorder import VideoRecorder
 
+render_video = True
+
+if render_video:
+    import cv2
+    cv2.namedWindow('image', cv2.WINDOW_NORMAL)
+    cv2.resizeWindow('image', 800, 600)
+
 class Agent:
     """An general class for RL agents.
     """
@@ -29,7 +36,7 @@ class Agent:
         if isinstance(self.env, DotMap):
             raise ValueError("Environment must be provided to the agent at initialization.")
 
-    def sample(self, horizon, policy, record_fname=None, control=False):
+    def sample(self, horizon, policy, record_fname=None):
         """Samples a rollout from the agent.
 
         Arguments:
@@ -49,24 +56,31 @@ class Agent:
         O, A, reward_sum, done = [self.env.reset()], [], 0, False
 
         policy.reset()
-        if control:
-            solution = self.env.IKSolve(O[0])
+        if policy.__class__.__name__ == "Physics":
+            solution = policy.act(O[0], self.env.dmcenv)
 
         for t in range(horizon):
             if video_record:
                 recorder.capture_frame()
             start = time.time()
-            if control:
+            if policy.__class__.__name__ == "Physics":
                 force = solution - O[t][0:9]
-                print('motor: ', force)
-                A.append(force * 20)
+                A.append(force * 5)
             else:
                 solution = policy.act(O[t], t)
                 A.append(solution)
 
             times.append(time.time() - start)
-            obs, reward, done, info = self.env.step(A[t] + O[t][0:9])
+            if hasattr(self.env, 'action_mode') and self.env.action_mode is "delta":
+                A[t] = self.env.after_action(A[t], O[t])
+            obs, reward, done, info = self.env.step(A[t])
 
+            if render_video:
+                screen = self.env.render(mode='rgb_array')
+                cv2.imshow('image', cv2.cvtColor(screen, cv2.COLOR_BGR2RGB))
+                if(cv2.waitKey(25) & 0xFF == ord('q')):
+                    cv2.destroyAllWindows()
+                    break
 
             O.append(obs)
             reward_sum += reward

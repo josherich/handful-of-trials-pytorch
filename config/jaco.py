@@ -13,7 +13,7 @@ from torch.nn import functional as F
 from config.utils import swish, get_affine_params
 from DotmapUtils import get_required_argument
 
-from jaco.jacoEnv import env
+from jaco.jaco_gym import env
 from jaco.jaco import position_penalty, ef_pose_penalty
 from dm_control.mujoco.wrapper import mjbindings
 mjlib = mjbindings.mjlib
@@ -119,6 +119,8 @@ class JacoConfigModule:
 
     def __init__(self):
         self.ENV = env
+        self.ENV.action_mode = 'delta'
+        self.ENV.after_action = self.after_action
         print(self.ENV.observation_space)
         print(self.ENV.action_space)
         self.ENV.reset()
@@ -149,6 +151,9 @@ class JacoConfigModule:
     def update_goal(self):
         self.goal = None
 
+    def after_action(self, action, obs):
+        return action + obs[0:9]
+
     def obs_cost_fn(self, obs):
 
         assert isinstance(obs, torch.Tensor)
@@ -162,7 +167,7 @@ class JacoConfigModule:
         COST_D = 0.1
 
         obs = obs.detach().cpu().numpy()
-        ef_angle = obs[:,24:27]
+        ef_angle = obs[:,15:18]
         cost = COST_D * np.arccos(np.dot(ef_angle, [0,0,-1]) / np.linalg.norm(ef_angle, axis=1))
         return torch.from_numpy(cost).float().to(TORCH_DEVICE)
 

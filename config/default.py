@@ -93,7 +93,7 @@ def _create_ctrl_config(ctrl_cfg, cfg_module, ctrl_type, ctrl_args, type_map):
     ctrl_cfg.opt_cfg.plan_hor = cfg_module.PLAN_HOR
     ctrl_cfg.opt_cfg.obs_cost_fn = cfg_module.obs_cost_fn
     ctrl_cfg.opt_cfg.ac_cost_fn = cfg_module.ac_cost_fn
-    ctrl_cfg.opt_cfg.pose_cost_fn = cfg_module.pose_cost_fn
+    ctrl_cfg.opt_cfg.pose_cost_fn = cfg_module.pose_cost_fn if hasattr(cfg_module, 'pose_cost_fn') else None
 
     # Process arguments here.
     # model_init_cfg should be an empty Dotmap

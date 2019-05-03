@@ -112,13 +112,13 @@ class MPC(Controller):
                         Warning: Can be very memory-intensive
         """
         super().__init__(params)
-        self.actuator_mode = "position_delta"
+
         self.dO, self.dU = params.env.observation_space.shape[0], params.env.action_space.shape[0]
         self.ac_ub, self.ac_lb = params.env.action_space.high, params.env.action_space.low
         self.ac_ub = np.minimum(self.ac_ub, params.get("ac_ub", self.ac_ub))
         self.ac_lb = np.maximum(self.ac_lb, params.get("ac_lb", self.ac_lb))
 
-        if self.actuator_mode == "position_delta":
+        if hasattr(params.env, "action_mode") and params.env.action_mode is "delta":
             _LIMIT = 1
             self.ac_lb = np.repeat(-_LIMIT, self.ac_lb.shape)
             self.ac_ub = np.repeat(_LIMIT, self.ac_lb.shape)
@@ -364,8 +364,8 @@ class MPC(Controller):
 
             cost = self.obs_cost_fn(next_obs) + self.ac_cost_fn(cur_acs)
 
-            # if not self.pose_cost_fn:
-                # cost += self.pose_cost_fn(next_obs)
+            if self.pose_cost_fn:
+                cost += self.pose_cost_fn(next_obs)
 
             cost = cost.view(-1, self.npart)
 
