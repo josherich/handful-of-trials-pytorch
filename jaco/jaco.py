@@ -163,7 +163,7 @@ class JacoReacher(base.Task):
     self._timeout_progress = 0
 
     # randomize target position
-    angle = self.random.uniform(np.pi, 2 * np.pi)
+    angle = self.random.uniform(0, 2 * np.pi)
     anglez = self.random.uniform(0, np.pi)
     radius = self.random.uniform(.35, .60)
 
@@ -192,7 +192,7 @@ class JacoReacher(base.Task):
     obs['to_target'] = physics.finger_to_target()
     obs['target'] = physics.target_pos()
     # obs['velocity'] = physics.velocity()[0:9]
-    # obs['ef_rot'] = physics.named.data.site_xmat['palm'].reshape(3,3).dot([0,0,-1])
+    obs['ef_rot'] = physics.named.data.site_xmat['palm'].reshape(3,3).dot([0,0,-1])
     return obs
 
   def before_step(self, action, physics):
