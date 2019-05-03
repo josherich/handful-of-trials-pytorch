@@ -35,3 +35,37 @@ def get_affine_params(ensemble_size, in_features, out_features):
     b = nn.Parameter(torch.zeros(ensemble_size, 1, out_features, dtype=torch.float32))
 
     return w, b
+
+# from scipy.stats import truncnorm
+# import matplotlib.pyplot as plt
+
+# TODO: compare with tf implementation
+def truncated_normal_(size, std=1):
+    mean=0
+    tensor = torch.zeros(size)
+    tmp = tensor.new_empty(size + (4,)).normal_()
+    valid = (tmp < 2) & (tmp > -2)
+    ind = valid.max(-1, keepdim=True)[1]
+    tensor.data.copy_(tmp.gather(-1, ind).squeeze(-1))
+    tensor.data.mul_(std).add_(mean)
+    return tensor
+
+# fig, ax = plt.subplots(1, 1)
+
+# def test_truncnorm():
+#     a, b = -2, 2
+#     size = 1000000
+#     r = truncnorm.rvs(a, b, size=size)
+#     ax.hist(r, density=True, histtype='stepfilled', alpha=0.2, bins=50)
+
+#     tensor = torch.zeros(size)
+#     truncated_normal_(tensor)
+#     r = tensor.numpy()
+
+#     ax.hist(r, density=True, histtype='stepfilled', alpha=0.2, bins=50)
+#     ax.legend(loc='best', frameon=False)
+#     plt.show()
+
+
+# if __name__ == '__main__':
+#     test_truncnorm()
