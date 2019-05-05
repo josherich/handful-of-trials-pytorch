@@ -1,3 +1,41 @@
+# Transfer learning on Kinova Jaco using PETS, TD3
+
+This repo includes some modifications to do transfer learning on Jaco robotic arms
+
+1. Mujoco model for
+    - [delta position control](https://github.com/josherich/handful-of-trials-pytorch/blob/master/jaco/jaco_pos.xml)
+    - [motor control](https://github.com/josherich/handful-of-trials-pytorch/blob/master/jaco/jaco_motor.xml)
+
+2. [Jaco environment for gym, dm_control](https://github.com/josherich/handful-of-trials-pytorch/blob/master/jaco/jaco.py)
+
+3. [Jaco module for PETS](https://github.com/josherich/handful-of-trials-pytorch/blob/master/config/jaco.py)
+
+4. [IK solver](https://github.com/josherich/handful-of-trials-pytorch/blob/master/Physics.py)
+
+5. [Script](https://github.com/josherich/handful-of-trials-pytorch/blob/master/transfer.py) for running transfer experiments
+
+### Train
+```bash
+python mbexp.py -env jaco
+```
+
+### Run and Render
+```bash
+python render.py -env jaco -model-dir path/to/model -logdir path/to/log
+```
+
+### Run transfer experiment
+```bash
+python transfer.py -env jaco -model-dir path/to/model -logdir path/to/log
+```
+
+### Run IK solver
+```bash
+python mbexp.py -env jaco -physics
+```
+
+---
+
 This repo contains a pytorch implementation of the wonderful model-based Reinforcement Learning algorithms proposed in [Deep Reinforcement Learning in a Handful of Trials using Probabilistic Dynamics Models](https://arxiv.org/abs/1805.12114).
 
 As of now, the repo only supports the most high-performing variant: probabilistic ensemble for the learned dynamics model, TSinf trajectory sampling and Cross Entropy method for action optimization.
