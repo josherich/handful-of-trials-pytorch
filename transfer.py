@@ -7,6 +7,8 @@ import argparse
 import pprint
 import time
 import ipdb
+import collections
+import numpy as np
 
 from dotmap import DotMap
 from config import create_config
@@ -16,14 +18,29 @@ from jaco.jacoEnv import env
 from MPC import MPC
 from gym.wrappers.monitoring.video_recorder import VideoRecorder
 
-# import kinova
-# sys.path.append('../kinova-raw')
-# sys.path.append('../jaco-simulation')
+import sys
+import math
+sys.path.append('../kinova-raw')
+sys.path.append('../jaco-simulation')
 
+import kinova
 import cv2
 cv2.namedWindow('image', cv2.WINDOW_NORMAL)
 cv2.resizeWindow('image', 800, 600)
 
+_ACTION_COST_D = 0.0025
+
+# where the robot has to be (in kinova coordinates)
+# to be at zero in mujoco
+zero_offset = np.array([-180, 270, 90, 180, 180, -90, 0, 0, 0])
+
+# correct for the different physical directions of a +theta
+# movement between mujoco
+directions = np.array([-1, 1, -1, -1, -1, -1, 1, 1, 1])
+
+# correct for the degrees -> radians shift going from arm
+# to mujoco
+scales = np.array([math.pi / 180] * 6 + [0.78 / 6800] * 3)
 
 def get_jaco_angles():
     pos = kinova.get_angular_position()
@@ -35,28 +52,26 @@ def move_mujoco_to_real(env):
     env.dmcenv.physics.named.data.qpos[:9] = real_to_sim(angles)
 
 def real_to_sim(angles):
-    # where the robot has to be (in kinova coordinates)
-    # to be at zero in mujoco
-    zero_offset = np.array([-180, 270, 90, 180, 180, -90, 0, 0, 0])
-
-    # correct for the different physical directions of a +theta
-    # movement between mujoco
-    directions = np.array([-1, 1, -1, -1, -1, -1, 1, 1, 1])
-
-    # correct for the degrees -> radians shift going from arm
-    # to mujoco
-    scales = np.array([math.pi / 180] * 6 + [0.78 / 6800] * 3)
-
     return (angles - zero_offset) * directions * scales
 
+def sim_to_real(angles):
+    return (angles / (directions * scales)) + zero_offset
 
-def agent_sample(env, horizon, policy, record_fname):
+kinova.start()
+
+def agent_sample(env, horizon, policy, record_fname, logdir):
     solution = None
+    J_solution = None
+    
     video_record = record_fname is not None
     recorder = None if not video_record else VideoRecorder(env, record_fname)
 
-    times, rewards = [], []
+    times, rewards, J_rewards = [], [], []
     O, A, reward_sum, done = [env.reset()], [], 0, False
+    J_O, J_A, J_reward_sum, J_done = [env.reset()], [], 0, False
+
+    real_c = kinova.get_cartesian_position()
+    sim_c = env.dmcenv.physics.named.data.site_xpos['palm']
 
     policy.reset()
 
@@ -65,27 +80,31 @@ def agent_sample(env, horizon, policy, record_fname):
             recorder.capture_frame()
 
         start = time.time()
-
+        # print(O)
+        # print(t)
         solution = policy.act(O[t], t)
         A.append(solution)
 
+        J_solution = policy.act(J_O[t], t)
+        J_A.append(J_solution)
+
         times.append(time.time() - start)
 
-        # === Do action on real jaco ===
-        # move_jaco_real(A[t] + O[t][0:9])
-
-        print("ac: ", A[t] + O[t][0:9])
+        # === mujoco step ===
         obs, reward, done, info = env.step(A[t] + O[t][0:9])
-        print("obs: ", obs)
-        print("reward: ", reward)
+        sim_c = env.dmcenv.physics.named.data.site_xpos['palm']
 
-        # === Get obs from real jaco ===
-        # angles = get_jaco_angles()
-        # obs_angles = real_to_sim(angles)
-        # O[t][0:9] = obs_angles
+        # === jaco step ===
+        kinova.move_angular_delta(J_A[t][0:6]/directions[0:6])
+        real_c = kinova.get_cartesian_position()
+        J_obs = np.zeros(12)
+        J_obs[0:9] = real_to_sim(get_jaco_angles())
+        J_obs[9:12] = obs[12:15] - real_c.Coordinates[0:3]
+        J_reward = -np.linalg.norm(J_obs[9:12])
+        J_reward -= _ACTION_COST_D * np.square(J_A[t][0:6]).sum()
 
-        # === sync ===
-        # move_mojuco_to_real(env)
+        print("jaco pos:", real_c)
+        print("mujoco pos:", sim_c)
 
         screen = env.render(mode='rgb_array')
         cv2.imshow('image', cv2.cvtColor(screen, cv2.COLOR_BGR2RGB))
@@ -94,20 +113,41 @@ def agent_sample(env, horizon, policy, record_fname):
             break
 
         O.append(obs)
+        J_O.append(J_obs)
+
         reward_sum += reward
+        J_reward_sum += J_reward
         rewards.append(reward)
+        J_rewards.append(J_reward)
+
         if done:
             break
 
         # === stop ===
         ipdb.set_trace()
+        
+    savemat(os.path.join(self.logdir, "jaco.mat"),
+        {
+            "observations": np.array(J_O),
+            "actions": np.array(J_A),
+            "returns": J_reward_sum,
+            "rewards": np.array(J_rewards),
+        }
+    )
+
+    savemat(os.path.join(self.logdir, "mujoco.mat"),
+        {
+            "observations": np.array(O),
+            "actions": np.array(A),
+            "returns": reward_sum,
+            "rewards": np.array(rewards),
+        }
+    )
 
     if video_record:
         recorder.capture_frame()
         recorder.close()
 
-# jaco-lubb, with velocity
-# jaco-lub-novel, without velocity
 def main(env, ctrl_type, ctrl_args, overrides, model_dir, logdir):
     ctrl_args = DotMap(**{key: val for (key, val) in ctrl_args})
 
@@ -125,7 +165,7 @@ def main(env, ctrl_type, ctrl_args, overrides, model_dir, logdir):
     task_hor = get_required_argument(cfg.exp_cfg.sim_cfg, "task_hor", "Must provide task horizon.")
     policy = MPC(cfg.ctrl_cfg)
 
-    agent_sample(env, task_hor, policy, "transfer.mp4")
+    agent_sample(env, task_hor, policy, "transfer.mp4", logdir)
 
 
 if __name__ == "__main__":
