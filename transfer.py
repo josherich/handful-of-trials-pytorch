@@ -9,6 +9,7 @@ import time
 import ipdb
 import collections
 import numpy as np
+from scipy.io import savemat
 
 from dotmap import DotMap
 from config import create_config
@@ -97,9 +98,10 @@ def agent_sample(env, horizon, policy, record_fname, logdir):
         # === jaco step ===
         kinova.move_angular_delta(J_A[t][0:6]/directions[0:6])
         real_c = kinova.get_cartesian_position()
-        J_obs = np.zeros(12)
+        J_obs = np.zeros(15)
         J_obs[0:9] = real_to_sim(get_jaco_angles())
-        J_obs[9:12] = obs[12:15] - real_c.Coordinates[0:3]
+        J_obs[9:12] = obs[12:15] - [real_c.Coordinates[0],real_c.Coordinates[1],real_c.Coordinates[2]]
+        J_obs[12:15] = obs[12:15]
         J_reward = -np.linalg.norm(J_obs[9:12])
         J_reward -= _ACTION_COST_D * np.square(J_A[t][0:6]).sum()
 
@@ -124,9 +126,9 @@ def agent_sample(env, horizon, policy, record_fname, logdir):
             break
 
         # === stop ===
-        ipdb.set_trace()
-        
-    savemat(os.path.join(self.logdir, "jaco.mat"),
+        # ipdb.set_trace()
+    ts = str(time.time())
+    savemat(os.path.join(logdir, ts + "jaco.mat"),
         {
             "observations": np.array(J_O),
             "actions": np.array(J_A),
@@ -135,7 +137,7 @@ def agent_sample(env, horizon, policy, record_fname, logdir):
         }
     )
 
-    savemat(os.path.join(self.logdir, "mujoco.mat"),
+    savemat(os.path.join(logdir, ts + "mujoco.mat"),
         {
             "observations": np.array(O),
             "actions": np.array(A),
@@ -165,7 +167,7 @@ def main(env, ctrl_type, ctrl_args, overrides, model_dir, logdir):
     task_hor = get_required_argument(cfg.exp_cfg.sim_cfg, "task_hor", "Must provide task horizon.")
     policy = MPC(cfg.ctrl_cfg)
 
-    agent_sample(env, task_hor, policy, "transfer.mp4", logdir)
+    agent_sample(env, 50, policy, "transfer.mp4", logdir)
 
 
 if __name__ == "__main__":
