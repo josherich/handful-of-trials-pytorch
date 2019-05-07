@@ -14,7 +14,7 @@ from dotmap import DotMap
 from config import create_config
 from DotmapUtils import get_required_argument
 
-from jaco.jaco_gym import env
+from jaco.jacoEnv import env
 from MPC import MPC
 from gym.wrappers.monitoring.video_recorder import VideoRecorder
 
@@ -28,6 +28,19 @@ import cv2
 cv2.namedWindow('image', cv2.WINDOW_NORMAL)
 cv2.resizeWindow('image', 800, 600)
 
+# where the robot has to be (in kinova coordinates)
+# to be at zero in mujoco
+zero_offset = np.array([-180, 270, 90, 180, 180, -90, 0, 0, 0])
+
+
+# correct for the different physical directions of a +theta
+# movement between mujoco
+directions = np.array([-1, 1, -1, -1, -1, -1, 1, 1, 1])
+
+
+# correct for the degrees -> radians shift going from arm
+# to mujoco
+scales = np.array([math.pi / 180] * 6 + [0.78 / 6800] * 3)
 
 def get_jaco_angles():
     pos = kinova.get_angular_position()
@@ -38,21 +51,8 @@ def move_mujoco_to_real(env):
     angles = get_jaco_angles()
     env.dmcenv.physics.named.data.qpos[:9] = real_to_sim(angles)
 
-zero_offset = np.array([-180, 270, 90, 180, 180, -90, 0, 0, 0])
-directions = np.array([-1, 1, -1, -1, -1, -1, 1, 1, 1])
-scales = np.array([math.pi / 180] * 6 + [0.78 / 6800] * 3)
-
 def real_to_sim(angles):
-    # where the robot has to be (in kinova coordinates)
-    # to be at zero in mujoco
-    
 
-    # correct for the different physical directions of a +theta
-    # movement between mujoco
-    
-
-    # correct for the degrees -> radians shift going from arm
-    # to mujoco
     return (angles - zero_offset) * directions * scales
 
 def sim_to_real(angles):
@@ -67,11 +67,12 @@ def agent_sample(env, horizon, policy, record_fname):
 
     times, rewards = [], []
     O, A, reward_sum, done = [env.reset()], [], 0, False
+    J_O, J_A, J_reward_sum, J_done = [env.reset()], [], 0, False
+    
     real_c = kinova.get_cartesian_position()
     sim_c = env.dmcenv.physics.named.data.site_xpos['palm']
     print("Real pos:", real_c)
     print("sim pos:", sim_c)
-    return
     # move_mujoco_to_real(env)
     policy.reset()
 
@@ -101,12 +102,12 @@ def agent_sample(env, horizon, policy, record_fname):
         sim_c = env.dmcenv.physics.named.data.site_xpos['palm']
         print("Real pos:", real_c)
         print("sim pos:", sim_c)
-        # angles = get_jaco_angles()
-        # obs_angles = real_to_sim(angles)
+        angles = get_jaco_angles()
+        obs_angles = real_to_sim(angles)
         # print("real_obs", obs_angles)
         # O[t][0:9] = obs_angles
-        # obs[0:9] = obs_angles
-
+        obs[0:9] = obs_angles
+        obs[9:12] = obs[12:15] - real_c.Coordinates[0:3]
         # === sync ===
         # move_mujoco_to_real(env)
 
@@ -123,7 +124,6 @@ def agent_sample(env, horizon, policy, record_fname):
         #     break
 
         # === stop ===
-        # ipdb.set_trace()
 
     if video_record:
         recorder.capture_frame()
