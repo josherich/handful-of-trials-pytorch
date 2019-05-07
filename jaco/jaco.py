@@ -164,7 +164,7 @@ class JacoReacher(base.Task):
     # randomize target position
     angle = self.random.uniform(np.pi, 2 * np.pi)
     anglez = self.random.uniform(0, np.pi)
-    radius = self.random.uniform(.30, .60)
+    radius = self.random.uniform(.35, .60)
 
     physics.named.data.qpos[['target_x', 'target_y']] = radius * np.cos(angle), radius * np.sin(angle)
 
@@ -178,7 +178,7 @@ class JacoReacher(base.Task):
       'jaco_joint_6',
       'jaco_joint_finger_1',
       'jaco_joint_finger_2',
-      'jaco_joint_finger_3']] = real_to_sim(_HOME_POSE+home_noise)
+      'jaco_joint_finger_3']] = real_to_sim(_HOME_POSE)
     # print(real_to_sim(_JOINT_L))
     # print(real_to_sim(_JOINT_H))
     # print(real_to_sim(_HOME_POSE))
