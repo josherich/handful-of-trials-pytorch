@@ -364,8 +364,8 @@ class MPC(Controller):
 
             cost = self.obs_cost_fn(next_obs) + self.ac_cost_fn(cur_acs)
 
-            # if not self.pose_cost_fn:
-                # cost += self.pose_cost_fn(next_obs)
+            if hasattr(self, 'pose_cost_fn'):
+                cost += self.pose_cost_fn(next_obs)
 
             cost = cost.view(-1, self.npart)
 

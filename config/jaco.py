@@ -107,13 +107,13 @@ class JacoConfigModule:
     NROLLOUTS_PER_ITER = 1
     PLAN_HOR = 25
     # position:to_target:target
-    MODEL_IN, MODEL_OUT = 24, 15
+    # MODEL_IN, MODEL_OUT = 24, 15
 
     # position:to_target:velocity:target:ef_rot
     # MODEL_IN, MODEL_OUT = 36, 27
 
     # position:to_target:target:ef_rot
-    # MODEL_IN, MODEL_OUT = 27, 18
+    MODEL_IN, MODEL_OUT = 27, 18
 
     GP_NINDUCING_POINTS = 200
 
@@ -162,7 +162,7 @@ class JacoConfigModule:
         COST_D = 0.1
 
         obs = obs.detach().cpu().numpy()
-        ef_angle = obs[:,24:27]
+        ef_angle = obs[:,15:18]
         cost = COST_D * np.arccos(np.dot(ef_angle, [0,0,-1]) / np.linalg.norm(ef_angle, axis=1))
         return torch.from_numpy(cost).float().to(TORCH_DEVICE)
 

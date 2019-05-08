@@ -189,8 +189,8 @@ class JacoReacher(base.Task):
     obs['position'] = physics.position()[0:9]
     obs['to_target'] = physics.finger_to_target()
     obs['target'] = physics.target_pos()
+    obs['ef_rot'] = physics.named.data.site_xmat['palm'].reshape(3,3).dot([0,0,-1])
     # obs['velocity'] = physics.velocity()[0:9]
-    # obs['ef_rot'] = physics.named.data.site_xmat['palm'].reshape(3,3).dot([0,0,-1])
     return obs
 
   def before_step(self, action, physics):
@@ -201,6 +201,6 @@ class JacoReacher(base.Task):
     """Returns a sparse or a smooth reward, as specified in the constructor."""
     reward = -physics.finger_to_target_distance()
     reward -= physics.action_cost
-    # reward -= physics.pose_penalty()
-    # reward += physics.target_height()
+    reward -= physics.pose_penalty()
+
     return reward
