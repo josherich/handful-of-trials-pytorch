@@ -8,6 +8,16 @@ import numpy as np
 from dotmap import DotMap
 from gym.wrappers.monitoring.video_recorder import VideoRecorder
 
+render_video = False
+
+if render_video:
+    import cv2
+    width = 640
+    height = 480
+    fullwidth = width * 2
+    cv2.namedWindow('image', cv2.WINDOW_NORMAL)
+    cv2.resizeWindow('image', fullwidth, height)
+
 class Agent:
     """An general class for RL agents.
     """
@@ -67,6 +77,15 @@ class Agent:
             times.append(time.time() - start)
             obs, reward, done, info = self.env.step(A[t] + O[t][0:9])
 
+            if render_video:
+                # screen = self.env.render(mode='rgb_array')
+                pixel1 = self.env.dmcenv.physics.render(height, width, camera_id=1)
+                pixel2 = self.env.dmcenv.physics.render(height, width, camera_id=2)
+                pixel = np.concatenate([pixel1, pixel2], 1)
+                cv2.imshow('image', pixel)
+                if(cv2.waitKey(25) & 0xFF == ord('q')):
+                    cv2.destroyAllWindows()
+                    break
 
             O.append(obs)
             reward_sum += reward

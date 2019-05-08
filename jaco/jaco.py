@@ -90,7 +90,7 @@ def basic(time_limit=_DEFAULT_TIME_LIMIT, random=None):
   # return control.Environment(physics, task, time_limit=time_limit)
 
 def _make_model():
-  model_path = os.path.join(os.path.dirname( __file__ ), 'jaco_pos.xml')
+  model_path = os.path.join(os.path.dirname( __file__ ), 'jaco_wall_pos.xml')
   xml_string = common.read_model(model_path)
   mjcf = etree.fromstring(xml_string)
   return etree.tostring(mjcf, pretty_print=True)
@@ -162,11 +162,15 @@ class JacoReacher(base.Task):
     self._timeout_progress = 0
 
     # randomize target position
-    angle = self.random.uniform(np.pi, 2 * np.pi)
     anglez = self.random.uniform(0, np.pi)
-    radius = self.random.uniform(.35, .60)
-
-    physics.named.data.qpos[['target_x', 'target_y']] = radius * np.cos(angle), radius * np.sin(angle)
+    radius = self.random.uniform(0, .30)
+    lr = self.random.uniform(0,1)
+    if lr < .5:
+      angle = self.random.uniform(0, np.pi)
+      physics.named.data.qpos[['target_x', 'target_y']] = radius * np.sin(angle) + 0.35, radius * np.cos(angle)
+    else:
+      angle = self.random.uniform(np.pi, 2*np.pi)
+      physics.named.data.qpos[['target_x', 'target_y']] = radius * np.sin(angle) - 0.3, radius * np.cos(angle)
 
     home_noise = np.concatenate((self.random.uniform(-1.0, 1.0, 6), [0,0,0]))
     physics.named.data.qpos[[
