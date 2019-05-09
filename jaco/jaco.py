@@ -69,6 +69,11 @@ def real_to_sim(angles):
 
   return (angles - zero_offset) * directions * scales
 
+def damping_with_noise(random):
+  DAMPING = 40
+  RANGE = 10
+  return random.uniform(DAMPING-RANGE, DAMPING+RANGE, 6)
+
 def position_penalty(physics, joints_z):
   _FLOOR_H = 0.1
   _HEIGHT_COST_D = 0.001
@@ -182,6 +187,12 @@ class JacoReacher(base.Task):
     # print(real_to_sim(_JOINT_L))
     # print(real_to_sim(_JOINT_H))
     # print(real_to_sim(_HOME_POSE))
+    physics.named.model.dof_damping[['jaco_joint_1',
+      'jaco_joint_2',
+      'jaco_joint_3',
+      'jaco_joint_4',
+      'jaco_joint_5',
+      'jaco_joint_6']] = damping_with_noise(self.random)
 
   def get_observation(self, physics):
     """Returns an observation of the (bounded) physics state."""
