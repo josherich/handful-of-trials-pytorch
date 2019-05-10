@@ -200,7 +200,7 @@ class JacoReacher(base.Task):
     obs['position'] = physics.position()[0:9]
     obs['to_target'] = physics.finger_to_target()
     obs['target'] = physics.target_pos()
-    obs['damping'] = self.damping
+    # obs['damping'] = physics.get_damping()
     # obs['ef_rot'] = physics.named.data.site_xmat['palm'].reshape(3,3).dot([0,0,-1])
     # obs['velocity'] = physics.velocity()[0:9]
     return obs
