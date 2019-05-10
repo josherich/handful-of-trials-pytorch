@@ -187,7 +187,7 @@ class JacoReacher(base.Task):
     # print(real_to_sim(_JOINT_L))
     # print(real_to_sim(_JOINT_H))
     # print(real_to_sim(_HOME_POSE))
-    physics.named.model.dof_damping[['jaco_joint_1',
+    self.damping = physics.named.model.dof_damping[['jaco_joint_1',
       'jaco_joint_2',
       'jaco_joint_3',
       'jaco_joint_4',
@@ -200,7 +200,8 @@ class JacoReacher(base.Task):
     obs['position'] = physics.position()[0:9]
     obs['to_target'] = physics.finger_to_target()
     obs['target'] = physics.target_pos()
-    obs['ef_rot'] = physics.named.data.site_xmat['palm'].reshape(3,3).dot([0,0,-1])
+    obs['damping'] = self.damping
+    # obs['ef_rot'] = physics.named.data.site_xmat['palm'].reshape(3,3).dot([0,0,-1])
     # obs['velocity'] = physics.velocity()[0:9]
     return obs
 
@@ -212,6 +213,6 @@ class JacoReacher(base.Task):
     """Returns a sparse or a smooth reward, as specified in the constructor."""
     reward = -physics.finger_to_target_distance()
     reward -= physics.action_cost
-    reward -= physics.pose_penalty()
+    # reward -= physics.pose_penalty()
 
     return reward
